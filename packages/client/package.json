@@ -1,0 +1,111 @@
+{
+  "name": "@wonderkits/client",
+  "version": "1.0.0",
+  "description": "Universal Tauri plugin clients with intelligent multi-mode support (Native/Proxy/HTTP)",
+  "type": "module",
+  "main": "dist/index.js",
+  "module": "dist/index.esm.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.esm.js",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./sql": {
+      "import": "./dist/sql.esm.js",
+      "require": "./dist/sql.js",
+      "types": "./dist/sql.d.ts"
+    },
+    "./store": {
+      "import": "./dist/store.esm.js",
+      "require": "./dist/store.js",
+      "types": "./dist/store.d.ts"
+    },
+    "./fs": {
+      "import": "./dist/fs.esm.js",
+      "require": "./dist/fs.js",
+      "types": "./dist/fs.d.ts"
+    }
+  },
+  "files": [
+    "dist/**/*",
+    "README.md",
+    "CHANGELOG.md"
+  ],
+  "scripts": {
+    "build": "tsc && npx rollup -c",
+    "build:watch": "tsc --watch",
+    "dev": "npx rollup -c --watch",
+    "clean": "rm -rf dist",
+    "prebuild": "npm run clean",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "lint": "eslint src --ext .ts",
+    "format": "prettier --write src/**/*.ts",
+    "prepublishOnly": "npm run build",
+    "release": "npm publish --access public"
+  },
+  "keywords": [
+    "tauri",
+    "plugin",
+    "sql",
+    "store",
+    "filesystem",
+    "bridge",
+    "client",
+    "universal",
+    "multi-mode",
+    "wujie",
+    "microfrontend"
+  ],
+  "author": {
+    "name": "WonderKits",
+    "email": "contact@wonderkits.dev"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/wonderkits/taurisdks.git"
+  },
+  "bugs": {
+    "url": "https://github.com/wonderkits/taurisdks/issues"
+  },
+  "homepage": "https://github.com/wonderkits/taurisdks#readme",
+  "peerDependencies": {
+    "@tauri-apps/plugin-sql": "^2.0.0",
+    "@tauri-apps/plugin-store": "^2.0.0",
+    "@tauri-apps/plugin-fs": "^2.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@tauri-apps/plugin-sql": {
+      "optional": true
+    },
+    "@tauri-apps/plugin-store": {
+      "optional": true
+    },
+    "@tauri-apps/plugin-fs": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.0",
+    "@types/node": "^20.0.0",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "eslint": "^8.0.0",
+    "jest": "^29.5.0",
+    "prettier": "^3.0.0",
+    "rimraf": "^5.0.0",
+    "rollup": "^4.0.0",
+    "@rollup/plugin-typescript": "^11.0.0",
+    "@rollup/plugin-node-resolve": "^15.0.0",
+    "@rollup/plugin-commonjs": "^25.0.0",
+    "rollup-plugin-dts": "^6.0.0",
+    "ts-jest": "^29.1.0",
+    "typescript": "^5.0.0"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}

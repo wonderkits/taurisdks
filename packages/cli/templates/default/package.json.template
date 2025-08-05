@@ -1,0 +1,53 @@
+{
+  "name": "{{PACKAGE_NAME}}",
+  "version": "1.0.0",
+  "description": "{{APP_DESCRIPTION}}",
+  "main": "dist/bundle.js",
+  "types": "dist/types.d.ts",
+  "scripts": {
+    "dev": "vite --mode standalone",
+    "dev:lib": "vite --mode library",
+    "build": "vite build --mode standalone",
+    "build:lib": "vite build --mode library",
+    "build:prod": "npm run build:lib",
+    "test": "vitest",
+    "test:coverage": "vitest --coverage",
+    "lint": "eslint src --ext .ts,.tsx",
+    "typecheck": "tsc --noEmit",
+    "preview": "vite preview",
+    "package": "npm run build:lib && magicteam package"
+  },
+  "keywords": [
+    "magicteam",
+    "app",
+    "{{APP_CATEGORY}}"
+  ],
+  "author": "{{APP_AUTHOR}}",
+  "license": "MIT",
+  "dependencies": {
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "react-router-dom": "^7.1.5",
+    "zustand": "^5.0.3"
+  },
+  "devDependencies": {
+    "@types/node": "^24.1.0",
+    "@types/react": "^19.1.1",
+    "@types/react-dom": "^19.1.2",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "@vitejs/plugin-react": "^4.3.4",
+    "eslint": "^8.0.0",
+    "jsdom": "^26.1.0",
+    "typescript": "^5.8.3",
+    "vite": "^6.2.6",
+    "vitest": "^1.0.0"
+  },
+  "magicteam": {
+    "app": {
+      "id": "{{APP_ID}}",
+      "category": "{{APP_CATEGORY}}",
+      "displayName": "{{APP_DISPLAY_NAME}}"
+    }
+  }
+}

@@ -1,0 +1,51 @@
+{
+  "name": "@wonderkits/taurisdks",
+  "version": "1.0.0",
+  "description": "Universal Tauri SDK toolkit for WonderKits ecosystem",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "npm run build --workspaces",
+    "dev": "npm run dev --workspaces",
+    "test": "npm run test --workspaces",
+    "lint": "npm run lint --workspaces",
+    "clean": "npm run clean --workspaces",
+    "typecheck": "npm run typecheck --workspaces",
+    "publish:all": "npm run build && npm publish --workspaces --access public",
+    "bootstrap": "npm install --workspaces"
+  },
+  "workspaces": [
+    "packages/*"
+  ],
+  "keywords": [
+    "tauri",
+    "sdk",
+    "wonderkits",
+    "cli",
+    "client",
+    "core",
+    "monorepo"
+  ],
+  "author": {
+    "name": "WonderKits",
+    "email": "contact@wonderkits.dev"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/wonderkits/taurisdks.git"
+  },
+  "bugs": {
+    "url": "https://github.com/wonderkits/taurisdks/issues"
+  },
+  "homepage": "https://github.com/wonderkits/taurisdks#readme",
+  "devDependencies": {
+    "typescript": "^5.8.3",
+    "eslint": "^8.0.0",
+    "prettier": "^3.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  }
+}
