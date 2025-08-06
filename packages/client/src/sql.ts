@@ -300,21 +300,6 @@ export class Database implements BaseClient {
     return environmentDetector.getEnvironment();
   }
 
-  /**
-   * 工具函数：创建开发环境的数据库连接
-   * 自动选择最佳连接方式，支持智能降级
-   */
-  static async loadForDevelopment(connectionString: string, httpPort = 1421): Promise<Database> {
-    logger.info('启动智能 SQL 连接...');
-    
-    return await retryWithFallback(
-      () => Database.load(connectionString),
-      () => Database.load(connectionString, {
-        httpBaseUrl: `http://localhost:${httpPort}`
-      }),
-      '智能加载失败，尝试显式 HTTP 模式'
-    );
-  }
 }
 
 // 默认导出

@@ -14,7 +14,9 @@
 
 ### 核心设计模式
 
-**多模式运行时**: client 包自动检测并在三种执行模式间切换:
+**统一客户端管理**: 提供 `WonderKitsClient` 统一管理器，避免每个服务重复的 `initForDevelopment` 逻辑。支持智能环境检测和统一配置管理。
+
+**多模式运行时**: 客户端自动检测并在三种执行模式间切换:
 - `tauri-native`: 直接访问 Tauri 插件 (生产环境)
 - `tauri-proxy`: 通过主应用代理 (Wujie 微前端)
 - `http`: HTTP 桥接服务 (开发环境)
@@ -67,6 +69,31 @@ npm run dev
 
 # 清理构建产物
 npm run clean
+```
+
+### 统一客户端使用示例
+```typescript
+// 推荐方式：使用统一客户端管理器
+import { initForDevelopment } from '@wonderkits/client';
+
+const client = await initForDevelopment({
+  sql: { connectionString: 'sqlite:app.db' },
+  store: { filename: 'app.store' },
+  fs: {}
+}, {
+  httpPort: 8080,
+  verbose: true
+});
+
+// 使用服务
+const database = client.sql();
+const store = client.store();
+const fs = client.fs();
+
+// 执行操作
+await database.execute('CREATE TABLE users (id INTEGER PRIMARY KEY, name TEXT)');
+await store.set('version', '1.0.0');
+await fs.writeTextFile('config.json', '{"env": "dev"}');
 ```
 
 

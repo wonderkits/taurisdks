@@ -467,21 +467,6 @@ export class Store implements BaseClient {
     return result.data!.stores;
   }
 
-  /**
-   * 工具函数：创建开发环境的 Store
-   * 自动选择最佳连接方式，支持智能降级
-   */
-  static async loadForDevelopment(filename: string, httpPort = 1421): Promise<Store> {
-    logger.info('启动智能 Store 连接...');
-    
-    return await retryWithFallback(
-      () => Store.load(filename),
-      () => Store.load(filename, {
-        httpBaseUrl: `http://localhost:${httpPort}`
-      }),
-      '智能加载失败，尝试显式 HTTP 模式'
-    );
-  }
 }
 
 // 默认导出

@@ -434,21 +434,6 @@ export class FsClient implements BaseClient {
     return baseMode;
   }
 
-  /**
-   * 工具函数：创建开发环境的 FS 客户端
-   * 自动选择最佳连接方式，支持智能降级
-   */
-  static async initForDevelopment(httpPort = 1421): Promise<FsClient> {
-    logger.info('启动智能 FS 连接...');
-    
-    return await retryWithFallback(
-      () => FsClient.init(),
-      () => FsClient.init({
-        httpBaseUrl: `http://localhost:${httpPort}`
-      }),
-      '智能初始化失败，尝试显式 HTTP 模式'
-    );
-  }
 }
 
 // 默认导出

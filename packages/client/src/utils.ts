@@ -56,6 +56,20 @@ class EnvironmentDetectorImpl implements EnvironmentDetector {
   isInTauri(): boolean {
     return typeof window !== 'undefined' && !!window.__TAURI__;
   }
+
+  /**
+   * 检测是否在浏览器环境中
+   */
+  isBrowser(): boolean {
+    return typeof window !== 'undefined' && typeof document !== 'undefined';
+  }
+
+  /**
+   * 检测是否在 Node.js 环境中
+   */
+  isNode(): boolean {
+    return typeof process !== 'undefined' && process.versions?.node !== undefined;
+  }
 }
 
 // 导出单例实例
