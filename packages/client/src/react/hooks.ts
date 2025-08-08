@@ -126,6 +126,38 @@ export const useWonderKitsFs = () => {
 };
 
 /**
+ * 统一的服务状态检查 Hook
+ */
+export const useWonderKitsServiceStatus = () => {
+  const client = useWonderKitsClient();
+  const isConnected = useWonderKitsConnected();
+  const { addLog } = useWonderKits();
+  
+  const checkServiceStatus = async (serviceType: 'sql' | 'store' | 'fs') => {
+    if (!client) {
+      addLog(`❌ ${serviceType.toUpperCase()} 服务不可用: 客户端未初始化`);
+      return false;
+    }
+    
+    if (!isConnected) {
+      // 使用客户端的诊断信息
+      const diagnostics = await client.getConnectionDiagnostics();
+      addLog(`❌ ${serviceType.toUpperCase()} 服务不可用: ${diagnostics}`);
+      return false;
+    }
+    
+    if (!client.isServiceInitialized(serviceType)) {
+      addLog(`❌ ${serviceType.toUpperCase()} 服务未初始化`);
+      return false;
+    }
+    
+    return true;
+  };
+  
+  return { checkServiceStatus };
+};
+
+/**
  * 服务可用性检查 Hook
  */
 export const useWonderKitsServices = () => {

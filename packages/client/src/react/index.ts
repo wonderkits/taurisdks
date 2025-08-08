@@ -30,7 +30,8 @@ export {
   useWonderKitsSql,
   useWonderKitsStoreClient,
   useWonderKitsFs,
-  useWonderKitsServices
+  useWonderKitsServices,
+  useWonderKitsServiceStatus
 } from './hooks';
 
 // 🔧 Context Provider (Optional)

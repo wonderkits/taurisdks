@@ -30,6 +30,11 @@ export interface WonderKitsInitializerProps {
   showLogs?: boolean;
   /** 自定义日志前缀 */
   logPrefix?: string;
+  
+  /** HTTP 服务端口（独立运行时） */
+  httpPort?: number;
+  /** 是否强制指定运行模式 */
+  forceMode?: 'tauri-native' | 'tauri-proxy' | 'http';
 }
 
 const WonderKitsInitializer: React.FC<WonderKitsInitializerProps> = ({
@@ -41,7 +46,9 @@ const WonderKitsInitializer: React.FC<WonderKitsInitializerProps> = ({
   onInitialized,
   onError,
   showLogs = true,
-  logPrefix = '🚀'
+  logPrefix = '🚀',
+  httpPort = 8080,
+  forceMode
 }) => {
   const { initWithServices, addLog, isConnected } = useWonderKits();
 
@@ -54,7 +61,9 @@ const WonderKitsInitializer: React.FC<WonderKitsInitializerProps> = ({
     const initializeServices = async () => {
       try {
         if (showLogs) {
-          addLog(`${logPrefix} 应用启动，正在初始化 WonderKits 客户端...`);
+          addLog(`${logPrefix} 初始化 WonderKits 客户端...`);
+          addLog(`🔧 服务: SQL=${enableSql}, Store=${enableStore}, FS=${enableFs}`);
+          addLog(`🌐 HTTP端口: ${httpPort}, 模式: ${forceMode || '自动检测'}`);
         }
         
         // 初始化指定的服务
@@ -63,7 +72,12 @@ const WonderKitsInitializer: React.FC<WonderKitsInitializerProps> = ({
           enableStore,
           enableSql,
           storeFilename,
-          sqlConnectionString
+          sqlConnectionString,
+          config: {
+            httpPort,
+            forceMode,
+            verbose: true
+          }
         });
         
         if (showLogs) {
@@ -77,6 +91,12 @@ const WonderKitsInitializer: React.FC<WonderKitsInitializerProps> = ({
         
         if (showLogs) {
           addLog(`❌ 初始化失败: ${error.message}`);
+          
+          // 简化的错误提示
+          const isNetworkError = error.message.includes('fetch') || error.message.includes('NetworkError');
+          if (isNetworkError) {
+            addLog(`💡 提示: 请确保 HTTP 服务运行在端口 ${httpPort} 或在 Tauri 应用中运行`);
+          }
         }
         
         // 调用错误回调
@@ -98,7 +118,9 @@ const WonderKitsInitializer: React.FC<WonderKitsInitializerProps> = ({
     onInitialized, 
     onError, 
     showLogs, 
-    logPrefix
+    logPrefix,
+    httpPort,
+    forceMode
   ]);
 
   // 这个组件不渲染任何内容

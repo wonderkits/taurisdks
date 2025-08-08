@@ -110,6 +110,64 @@ export class WonderKitsClient {
   }
 
   /**
+   * 检测连接状态 - 根据模式进行不同的检测
+   */
+  async checkConnection(): Promise<boolean> {
+    try {
+      switch (this.mode) {
+        case 'tauri-native':
+          // Tauri 原生模式：检查 Tauri API 是否可用
+          return typeof window !== 'undefined' && !!(window as any).__TAURI__;
+          
+        case 'tauri-proxy':
+          // 代理模式：检查主应用的代理对象是否可用
+          return typeof window !== 'undefined' && 
+                 !!(window as any).__POWERED_BY_WUJIE__ &&
+                 !!(window as any).$wujie?.props;
+          
+        case 'http':
+          // HTTP 模式：发送简单的健康检查请求
+          const response = await fetch(`${this.getHttpBaseUrl()}/health`, {
+            method: 'GET',
+            timeout: 3000
+          } as any);
+          return response.ok;
+          
+        default:
+          return false;
+      }
+    } catch (error) {
+      logger.error('连接检测失败:', error);
+      return false;
+    }
+  }
+
+  /**
+   * 获取连接诊断信息
+   */
+  async getConnectionDiagnostics(): Promise<string> {
+    const isConnected = await this.checkConnection();
+    
+    if (isConnected) {
+      return `✅ 连接正常 (模式: ${this.mode})`;
+    }
+    
+    switch (this.mode) {
+      case 'tauri-native':
+        return `❌ Tauri 原生 API 不可用，请在 Tauri 应用中运行`;
+        
+      case 'tauri-proxy':
+        return `❌ Wujie 代理不可用，请确保在主应用的微前端环境中运行`;
+        
+      case 'http':
+        return `❌ HTTP 服务不可用 (${this.getHttpBaseUrl()})，请启动 WonderKits HTTP 服务`;
+        
+      default:
+        return `❌ 未知运行模式: ${this.mode}`;
+    }
+  }
+
+  /**
    * 获取 HTTP 基础 URL（HTTP 模式时使用）
    */
   private getHttpBaseUrl(): string {
@@ -120,6 +178,14 @@ export class WonderKitsClient {
    * 初始化指定的服务
    */
   async initServices(services: ClientServices): Promise<this> {
+    // 首先进行连接检测
+    const isConnected = await this.checkConnection();
+    if (!isConnected) {
+      const diagnostics = await this.getConnectionDiagnostics();
+      throw new Error(`服务初始化失败: ${diagnostics}`);
+    }
+    
+    logger.info(`✅ 连接检测通过，开始初始化服务...`);
     const initPromises: Promise<void>[] = [];
 
     // 初始化 SQL 服务

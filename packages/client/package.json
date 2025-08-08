@@ -1,6 +1,6 @@
 {
   "name": "@wonderkits/client",
-  "version": "1.0.3",
+  "version": "1.0.7",
   "description": "Universal Tauri plugin clients with intelligent multi-mode support (Native/Proxy/HTTP)",
   "type": "module",
   "main": "dist/index.js",
