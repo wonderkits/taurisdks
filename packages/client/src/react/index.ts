@@ -40,6 +40,12 @@ export {
   withWonderKits
 } from './provider';
 
+// 🎨 React Components
+export {
+  WonderKitsInitializer,
+  type WonderKitsInitializerProps
+} from './components';
+
 // 📝 Re-export core types for convenience
 export type {
   WonderKitsClient,
