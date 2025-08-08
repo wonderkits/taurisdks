@@ -7,7 +7,10 @@ const external = [
   '@tauri-apps/plugin-sql',
   '@tauri-apps/plugin-store', 
   '@tauri-apps/plugin-fs',
-  '@tauri-apps/api/path'
+  '@tauri-apps/api/path',
+  'react',
+  'react-dom',
+  'zustand'
 ];
 
 const createConfig = (input, outputName) => [
@@ -62,5 +65,7 @@ export default [
   // Individual modules
   ...createConfig('src/sql.ts', 'sql'),
   ...createConfig('src/store.ts', 'store'),
-  ...createConfig('src/fs.ts', 'fs')
+  ...createConfig('src/fs.ts', 'fs'),
+  // React integration
+  ...createConfig('src/react/index.ts', 'react')
 ];

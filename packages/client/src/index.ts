@@ -60,3 +60,7 @@ export const packageInfo = {
   repository: 'https://github.com/wonderkits/taurisdks',
   license: 'MIT'
 };
+
+// 💡 React 集成提示
+// 如果你在使用 React，推荐使用专门的 React 集成：
+// import { useWonderKits, WonderKitsProvider } from '@wonderkits/client/react';
