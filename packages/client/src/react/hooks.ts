@@ -1,184 +1,127 @@
 /**
- * WonderKits React Hooks
- * 
- * 提供便捷的 React Hooks 来使用 WonderKits 客户端
- * 
- * @version 1.0.0
+ * WonderKits React Hooks - 简化版
+ *
+ * 提供简洁的 React Hooks 来使用 WonderKits 客户端
+ *
+ * @version 1.1.0
  * @license MIT
  */
 
-import { useWonderKitsStore, type WonderKitsStore } from './store';
+import { useWonderKitsStore } from './store';
+import type { WonderKitsClientConfig, ClientServices } from '../client';
+import { WujieUtils } from '../wujie';
 
 /**
- * 获取 WonderKits 客户端实例
- */
-export const useWonderKitsClient = () => {
-  return useWonderKitsStore(state => state.client);
-};
-
-/**
- * 获取连接状态
- */
-export const useWonderKitsConnected = () => {
-  return useWonderKitsStore(state => state.isConnected);
-};
-
-/**
- * 获取加载状态
- */
-export const useWonderKitsLoading = () => {
-  return useWonderKitsStore(state => state.isLoading);
-};
-
-/**
- * 获取客户端运行模式
- */
-export const useWonderKitsMode = () => {
-  return useWonderKitsStore(state => state.clientMode);
-};
-
-/**
- * 获取日志列表
- */
-export const useWonderKitsLogs = () => {
-  return useWonderKitsStore(state => state.logs);
-};
-
-/**
- * 获取错误状态
- */
-export const useWonderKitsError = () => {
-  return useWonderKitsStore(state => state.error);
-};
-
-/**
- * 获取完整的状态和操作
+ * 主要的 WonderKits Hook - 获取完整状态和操作
  */
 export const useWonderKits = () => {
-  const client = useWonderKitsClient();
-  const isConnected = useWonderKitsConnected();
-  const isLoading = useWonderKitsLoading();
-  const mode = useWonderKitsMode();
-  const logs = useWonderKitsLogs();
-  const error = useWonderKitsError();
-  
-  const actions = useWonderKitsStore(state => ({
-    addLog: state.addLog,
-    clearLogs: state.clearLogs,
-    setError: state.setError,
-    initClient: state.initClient,
-    initWithServices: state.initWithServices,
-    disconnect: state.disconnect,
-    reset: state.reset
-  }));
-  
-  return {
-    // 状态
-    client,
-    isConnected,
-    isLoading,
-    mode,
-    logs,
-    error,
-    
-    // 操作
-    ...actions
-  };
+  return useWonderKitsStore();
 };
 
 /**
- * 使用 SQL 客户端
+ * 初始化配置接口
  */
-export const useWonderKitsSql = () => {
-  const client = useWonderKitsClient();
-  const isConnected = useWonderKitsConnected();
-  
-  return {
-    sql: client?.sql(),
-    isAvailable: isConnected && client?.isServiceInitialized('sql')
-  };
-};
+export interface WonderKitsInitConfig {
+  /** 是否启用文件系统服务 */
+  enableFs?: boolean;
+  /** 是否启用存储服务 */
+  enableStore?: boolean;
+  /** 是否启用数据库服务 */
+  enableSql?: boolean;
+
+  /** Store 文件名 */
+  storeFilename?: string;
+  /** SQL 连接字符串 */
+  sqlConnectionString?: string;
+
+  /** HTTP 服务端口（独立运行时） */
+  httpPort?: number;
+  /** 是否强制指定运行模式 */
+  forceMode?: 'tauri-native' | 'tauri-proxy' | 'http';
+  /** 是否显示详细日志 */
+  verbose?: boolean;
+}
 
 /**
- * 使用 Store 客户端
+ * 函数式初始化 - 不依赖组件生命周期
  */
-export const useWonderKitsStoreClient = () => {
-  const client = useWonderKitsClient();
-  const isConnected = useWonderKitsConnected();
-  
-  return {
-    store: client?.store(),
-    isAvailable: isConnected && client?.isServiceInitialized('store')
-  };
-};
+export const initWonderKits = async (config: WonderKitsInitConfig = {}) => {
+  const {
+    enableFs = true,
+    enableStore = true,
+    enableSql = true,
+    storeFilename = 'app-settings.json',
+    sqlConnectionString = 'sqlite:app.db',
+    httpPort = 8080,
+    forceMode,
+    verbose = true,
+  } = config;
 
-/**
- * 使用 FS 客户端
- */
-export const useWonderKitsFs = () => {
-  const client = useWonderKitsClient();
-  const isConnected = useWonderKitsConnected();
-  
-  return {
-    fs: client?.fs(),
-    isAvailable: isConnected && client?.isServiceInitialized('fs')
-  };
-};
+  const store = useWonderKitsStore.getState();
 
-/**
- * 统一的服务状态检查 Hook
- */
-export const useWonderKitsServiceStatus = () => {
-  const client = useWonderKitsClient();
-  const isConnected = useWonderKitsConnected();
-  const { addLog } = useWonderKits();
-  
-  const checkServiceStatus = async (serviceType: 'sql' | 'store' | 'fs') => {
-    if (!client) {
-      addLog(`❌ ${serviceType.toUpperCase()} 服务不可用: 客户端未初始化`);
-      return false;
+  // Wujie 环境检测和配置
+  const isInWujie = WujieUtils.isInWujie();
+  const appInfo = WujieUtils.getAppInfo();
+
+  // 如果已经连接且所有服务都已初始化，跳过
+  if (store.isConnected && store.client) {
+    const needInit =
+      (enableFs && !store.client.isServiceInitialized('fs')) ||
+      (enableStore && !store.client.isServiceInitialized('store')) ||
+      (enableSql && !store.client.isServiceInitialized('sql'));
+
+    if (!needInit) {
+      store.addLog('⚠️ WonderKits 已经初始化，跳过重复初始化');
+      return store.client;
     }
-    
-    if (!isConnected) {
-      // 使用客户端的诊断信息
-      const diagnostics = await client.getConnectionDiagnostics();
-      addLog(`❌ ${serviceType.toUpperCase()} 服务不可用: ${diagnostics}`);
-      return false;
-    }
-    
-    if (!client.isServiceInitialized(serviceType)) {
-      addLog(`❌ ${serviceType.toUpperCase()} 服务未初始化`);
-      return false;
-    }
-    
-    return true;
-  };
-  
-  return { checkServiceStatus };
-};
-
-/**
- * 服务可用性检查 Hook
- */
-export const useWonderKitsServices = () => {
-  const client = useWonderKitsClient();
-  const isConnected = useWonderKitsConnected();
-  
-  if (!client || !isConnected) {
-    return {
-      sql: false,
-      store: false,
-      fs: false,
-      available: []
-    };
   }
-  
-  const available = client.getInitializedServices();
-  
-  return {
-    sql: client.isServiceInitialized('sql'),
-    store: client.isServiceInitialized('store'),
-    fs: client.isServiceInitialized('fs'),
-    available
+
+  // 构建服务配置
+  const services: ClientServices = {};
+
+  if (enableFs) {
+    services.fs = {};
+    if (verbose) store.addLog('📁 启用文件系统服务');
+  }
+
+  if (enableStore) {
+    services.store = { filename: storeFilename };
+    if (verbose) store.addLog(`💾 启用存储服务 (${storeFilename})`);
+  }
+
+  if (enableSql) {
+    services.sql = { connectionString: sqlConnectionString };
+    if (verbose) store.addLog(`🗃️ 启用数据库服务 (${sqlConnectionString})`);
+  }
+
+  // 如果没有启用任何服务，直接返回
+  if (Object.keys(services).length === 0) {
+    store.addLog('⚠️ 未指定要启用的服务');
+    return null;
+  }
+
+  const clientConfig: WonderKitsClientConfig = {
+    httpPort,
+    forceMode,
+    verbose,
   };
+
+  if (verbose) {
+    store.addLog('🚀 初始化 WonderKits 客户端...');
+    store.addLog(`🔧 服务: SQL=${enableSql}, Store=${enableStore}, FS=${enableFs}`);
+    store.addLog(`🌐 HTTP端口: ${httpPort}, 模式: ${forceMode || '自动检测'}`);
+  }
+
+  await store.initClient(services, clientConfig);
+
+  if (verbose) {
+    store.addLog('✅ WonderKits 客户端初始化完成');
+  }
+
+  return store.client;
 };
+
+// 保留一些常用的便捷 hooks，但简化实现
+export const useWonderKitsClient = () => useWonderKitsStore(state => state.client);
+export const useWonderKitsConnected = () => useWonderKitsStore(state => state.isConnected);
+export const useWonderKitsLoading = () => useWonderKitsStore(state => state.isLoading);

@@ -49,6 +49,14 @@ export type {
 // 🛠️ 工具函数
 export { environmentDetector, logger } from './utils';
 
+// 🌐 Wujie 微前端集成
+export {
+  WujieUtils,
+  WujieAppManager,
+  createWujieApp,
+  type WujieAppInfo
+} from './wujie';
+
 // 📊 版本信息
 export const version = '1.0.0';
 
@@ -63,4 +71,4 @@ export const packageInfo = {
 
 // 💡 React 集成提示
 // 如果你在使用 React，推荐使用专门的 React 集成：
-// import { useWonderKits, WonderKitsProvider } from '@wonderkits/client/react';
+// import { useWonderKits, initWonderKits } from '@wonderkits/client/react';

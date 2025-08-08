@@ -1,13 +1,13 @@
 /**
- * @wonderkits/client/react - React Integration
+ * @wonderkits/client/react - 简化版 React Integration
  * 
- * 为 WonderKits 客户端提供完整的 React 集成：
+ * 为 WonderKits 客户端提供简洁的 React 集成：
  * - Zustand 状态管理
- * - React Hooks
- * - Context Provider（可选）
+ * - 简化的 React Hooks
+ * - 函数式初始化
  * - TypeScript 支持
  * 
- * @version 1.0.0
+ * @version 1.1.0
  * @license MIT
  */
 
@@ -24,28 +24,10 @@ export {
   useWonderKitsClient,
   useWonderKitsConnected,
   useWonderKitsLoading,
-  useWonderKitsMode,
-  useWonderKitsLogs,
-  useWonderKitsError,
-  useWonderKitsSql,
-  useWonderKitsStoreClient,
-  useWonderKitsFs,
-  useWonderKitsServices,
-  useWonderKitsServiceStatus
+  initWonderKits,
+  type WonderKitsInitConfig
 } from './hooks';
 
-// 🔧 Context Provider (Optional)
-export {
-  WonderKitsProvider,
-  useWonderKitsContext,
-  withWonderKits
-} from './provider';
-
-// 🎨 React Components
-export {
-  WonderKitsInitializer,
-  type WonderKitsInitializerProps
-} from './components';
 
 // 📝 Re-export core types for convenience
 export type {

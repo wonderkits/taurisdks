@@ -1,6 +1,6 @@
 {
   "name": "@wonderkits/client",
-  "version": "1.0.7",
+  "version": "1.3.0",
   "description": "Universal Tauri plugin clients with intelligent multi-mode support (Native/Proxy/HTTP)",
   "type": "module",
   "main": "dist/index.js",
@@ -78,11 +78,11 @@
   },
   "homepage": "https://github.com/wonderkits/taurisdks#readme",
   "peerDependencies": {
+    "@tauri-apps/plugin-fs": "^2.0.0",
     "@tauri-apps/plugin-sql": "^2.0.0",
     "@tauri-apps/plugin-store": "^2.0.0",
-    "@tauri-apps/plugin-fs": "^2.0.0",
-    "react": ">=18.0.0",
-    "zustand": ">=4.0.0"
+    "react": ">=19.0.0",
+    "zustand": ">=5.0.0"
   },
   "peerDependenciesMeta": {
     "@tauri-apps/plugin-sql": {
@@ -102,9 +102,12 @@
     }
   },
   "devDependencies": {
+    "@rollup/plugin-commonjs": "^25.0.0",
+    "@rollup/plugin-node-resolve": "^15.0.0",
+    "@rollup/plugin-typescript": "^11.0.0",
     "@types/jest": "^29.5.0",
     "@types/node": "^20.0.0",
-    "@types/react": "^18.0.0",
+    "@types/react": "^19.0.0",
     "@typescript-eslint/eslint-plugin": "^6.0.0",
     "@typescript-eslint/parser": "^6.0.0",
     "eslint": "^8.0.0",
@@ -112,12 +115,10 @@
     "prettier": "^3.0.0",
     "rimraf": "^5.0.0",
     "rollup": "^4.0.0",
-    "@rollup/plugin-typescript": "^11.0.0",
-    "@rollup/plugin-node-resolve": "^15.0.0",
-    "@rollup/plugin-commonjs": "^25.0.0",
     "rollup-plugin-dts": "^6.0.0",
     "ts-jest": "^29.1.0",
-    "typescript": "^5.0.0"
+    "typescript": "^5.0.0",
+    "zustand": "5.0.7"
   },
   "engines": {
     "node": ">=16.0.0"
