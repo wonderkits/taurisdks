@@ -1,6 +1,6 @@
 {
   "name": "@wonderkits/client",
-  "version": "1.3.0",
+  "version": "1.3.3",
   "description": "Universal Tauri plugin clients with intelligent multi-mode support (Native/Proxy/HTTP)",
   "type": "module",
   "main": "dist/index.js",
@@ -12,25 +12,65 @@
       "require": "./dist/index.js",
       "types": "./dist/index.d.ts"
     },
+    "./core": {
+      "import": "./dist/core/index.esm.js",
+      "require": "./dist/core/index.js",
+      "types": "./dist/core/index.d.ts"
+    },
+    "./plugin": {
+      "import": "./dist/plugin/index.esm.js",
+      "require": "./dist/plugin/index.js",
+      "types": "./dist/plugin/index.d.ts"
+    },
+    "./plugin/sql": {
+      "import": "./dist/plugin/sql.esm.js",
+      "require": "./dist/plugin/sql.js",
+      "types": "./dist/plugin/sql.d.ts"
+    },
+    "./plugin/store": {
+      "import": "./dist/plugin/store.esm.js",
+      "require": "./dist/plugin/store.js",
+      "types": "./dist/plugin/store.d.ts"
+    },
+    "./plugin/fs": {
+      "import": "./dist/plugin/fs.esm.js",
+      "require": "./dist/plugin/fs.js",
+      "types": "./dist/plugin/fs.d.ts"
+    },
+    "./microapp": {
+      "import": "./dist/microapp/index.esm.js",
+      "require": "./dist/microapp/index.js",
+      "types": "./dist/microapp/index.d.ts"
+    },
+    "./framework": {
+      "import": "./dist/framework/index.esm.js",
+      "require": "./dist/framework/index.js",
+      "types": "./dist/framework/index.d.ts"
+    },
+    "./framework/react": {
+      "import": "./dist/framework/react/index.esm.js",
+      "require": "./dist/framework/react/index.js",
+      "types": "./dist/framework/react/index.d.ts"
+    },
     "./sql": {
-      "import": "./dist/sql.esm.js",
-      "require": "./dist/sql.js",
-      "types": "./dist/sql.d.ts"
+      "import": "./dist/plugin/sql.esm.js",
+      "require": "./dist/plugin/sql.js",
+      "types": "./dist/plugin/sql.d.ts"
     },
     "./store": {
-      "import": "./dist/store.esm.js",
-      "require": "./dist/store.js",
-      "types": "./dist/store.d.ts"
+      "import": "./dist/plugin/store.esm.js",
+      "require": "./dist/plugin/store.js",
+      "types": "./dist/plugin/store.d.ts"
     },
     "./fs": {
-      "import": "./dist/fs.esm.js",
-      "require": "./dist/fs.js",
-      "types": "./dist/fs.d.ts"
+      "import": "./dist/plugin/fs.esm.js",
+      "require": "./dist/plugin/fs.js",
+      "types": "./dist/plugin/fs.d.ts"
     },
     "./react": {
-      "import": "./dist/react.esm.js",
-      "require": "./dist/react.js",
-      "types": "./dist/react.d.ts"
+      "import": "./dist/framework/react/index.esm.js",
+      "require": "./dist/framework/react/index.js",
+      "types": "./dist/framework/react/index.d.ts"
     }
   },
   "files": [
@@ -49,7 +89,7 @@
     "lint": "eslint src --ext .ts",
     "format": "prettier --write src/**/*.ts",
     "prepublishOnly": "npm run build",
-    "release": "npm publish --access public --registry https://registry.npmjs.org/ "
+    "release": "npm run prebuild && npm publish --access public --registry https://registry.npmjs.org/ "
   },
   "keywords": [
     "tauri",
@@ -82,6 +122,7 @@
     "@tauri-apps/plugin-sql": "^2.0.0",
     "@tauri-apps/plugin-store": "^2.0.0",
     "react": ">=19.0.0",
+    "react-router-dom": ">=6.0.0",
     "zustand": ">=5.0.0"
   },
   "peerDependenciesMeta": {
@@ -95,6 +136,9 @@
       "optional": true
     },
     "react": {
+      "optional": true
+    },
+    "react-router-dom": {
       "optional": true
     },
     "zustand": {
@@ -113,6 +157,7 @@
     "eslint": "^8.0.0",
     "jest": "^29.5.0",
     "prettier": "^3.0.0",
+    "react-router-dom": "^6.26.0",
     "rimraf": "^5.0.0",
     "rollup": "^4.0.0",
     "rollup-plugin-dts": "^6.0.0",

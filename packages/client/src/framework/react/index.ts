@@ -25,7 +25,7 @@ export {
   useWonderKitsConnected,
   useWonderKitsLoading,
   initWonderKits,
-  type WonderKitsInitConfig
+  type WonderKitsReactConfig
 } from './hooks';
 
 
@@ -34,4 +34,4 @@ export type {
   WonderKitsClient,
   WonderKitsClientConfig,
   ClientServices
-} from '../client';
+} from '../../core/client';

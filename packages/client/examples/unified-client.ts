@@ -16,7 +16,8 @@ import {
 async function example1_FactoryPattern() {
   // 创建统一客户端
   const client = createWonderKitsClient({
-    httpPort: 8080,
+    httpPort: 1420,
+    httpHost: 'localhost', // 可配置主机地址，默认 localhost
     verbose: true
   });
 
@@ -54,7 +55,7 @@ async function example2_DevMode() {
     store: { filename: 'dev.store' },
     fs: {}
   }, {
-    httpPort: 8080
+    httpPort: 1420
   });
 
   // 检查哪些服务已初始化
@@ -78,7 +79,8 @@ async function example2_DevMode() {
 async function example3_ManualLifecycle() {
   const client = new WonderKitsClient({
     forceMode: 'http', // 强制使用 HTTP 模式
-    httpPort: 9000,
+    httpPort: 1420,
+    httpHost: '127.0.0.1', // 示例：使用 IP 地址
     verbose: true
   });
 

@@ -8,8 +8,8 @@
  */
 
 import { useWonderKitsStore } from './store';
-import type { WonderKitsClientConfig, ClientServices } from '../client';
-import { WujieUtils } from '../wujie';
+import type { WonderKitsClientConfig, ClientServices } from '../../core/client';
+import { WujieUtils } from '../../microapp/wujie';
 
 /**
  * 主要的 WonderKits Hook - 获取完整状态和操作
@@ -19,9 +19,10 @@ export const useWonderKits = () => {
 };
 
 /**
- * 初始化配置接口
+ * WonderKits React 配置接口
+ * 扩展了 WonderKitsClientConfig，添加了 React 特定的配置选项
  */
-export interface WonderKitsInitConfig {
+export interface WonderKitsReactConfig extends WonderKitsClientConfig {
   /** 是否启用文件系统服务 */
   enableFs?: boolean;
   /** 是否启用存储服务 */
@@ -33,26 +34,20 @@ export interface WonderKitsInitConfig {
   storeFilename?: string;
   /** SQL 连接字符串 */
   sqlConnectionString?: string;
-
-  /** HTTP 服务端口（独立运行时） */
-  httpPort?: number;
-  /** 是否强制指定运行模式 */
-  forceMode?: 'tauri-native' | 'tauri-proxy' | 'http';
-  /** 是否显示详细日志 */
-  verbose?: boolean;
 }
 
 /**
  * 函数式初始化 - 不依赖组件生命周期
  */
-export const initWonderKits = async (config: WonderKitsInitConfig = {}) => {
+export const initWonderKits = async (config: WonderKitsReactConfig = {}) => {
   const {
     enableFs = true,
     enableStore = true,
     enableSql = true,
     storeFilename = 'app-settings.json',
     sqlConnectionString = 'sqlite:app.db',
-    httpPort = 8080,
+    httpPort = 1420,
+    httpHost = 'localhost',
     forceMode,
     verbose = true,
   } = config;
@@ -102,6 +97,7 @@ export const initWonderKits = async (config: WonderKitsInitConfig = {}) => {
 
   const clientConfig: WonderKitsClientConfig = {
     httpPort,
+    httpHost,
     forceMode,
     verbose,
   };
@@ -109,7 +105,7 @@ export const initWonderKits = async (config: WonderKitsInitConfig = {}) => {
   if (verbose) {
     store.addLog('🚀 初始化 WonderKits 客户端...');
     store.addLog(`🔧 服务: SQL=${enableSql}, Store=${enableStore}, FS=${enableFs}`);
-    store.addLog(`🌐 HTTP端口: ${httpPort}, 模式: ${forceMode || '自动检测'}`);
+    store.addLog(`🌐 HTTP端口: ${httpPort}, 主机: ${httpHost}, 模式: ${forceMode || '自动检测'}`);
   }
 
   await store.initClient(services, clientConfig);

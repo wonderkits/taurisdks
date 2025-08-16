@@ -4,8 +4,8 @@
  * @magicteam/client
  */
 
-import type { BaseClient, BaseClientOptions, ClientMode, ApiResponse } from './types';
-import { environmentDetector, fetchWithErrorHandling, importTauriPlugin, retryWithFallback, logger } from './utils';
+import type { BaseClient, BaseClientOptions, ClientMode, ApiResponse } from '../core/types';
+import { environmentDetector, fetchWithErrorHandling, importTauriPlugin, retryWithFallback, logger, ApiPathManager } from '../core/utils';
 
 // FS 特定类型定义
 export interface FsClientInitOptions extends BaseClientOptions {
@@ -43,6 +43,7 @@ export class FsClient implements BaseClient {
   readonly isHttpMode: boolean;
   readonly isProxyMode: boolean;
   readonly isTauriNative: boolean;
+  private apiPathManager?: ApiPathManager;
 
   constructor(
     private httpBaseUrl: string | null = null,
@@ -51,6 +52,11 @@ export class FsClient implements BaseClient {
     this.isHttpMode = !!httpBaseUrl;
     this.isProxyMode = !!fsProxy;
     this.isTauriNative = !httpBaseUrl && !fsProxy;
+    
+    // 初始化 API 路径管理器
+    if (this.httpBaseUrl) {
+      this.apiPathManager = new ApiPathManager(this.httpBaseUrl);
+    }
   }
 
   /**
@@ -106,7 +112,7 @@ export class FsClient implements BaseClient {
   }
 
   private async readTextFileViaHttp(path: string): Promise<string> {
-    const response = await fetchWithErrorHandling(`${this.httpBaseUrl}/fs/read-text`, {
+    const response = await fetchWithErrorHandling(this.apiPathManager!.fs.readText(), {
       method: 'POST',
       body: JSON.stringify({ path })
     });
@@ -139,7 +145,7 @@ export class FsClient implements BaseClient {
   }
 
   private async writeTextFileViaHttp(path: string, content: string): Promise<void> {
-    const response = await fetchWithErrorHandling(`${this.httpBaseUrl}/fs/write-text`, {
+    const response = await fetchWithErrorHandling(this.apiPathManager!.fs.writeText(), {
       method: 'POST',
       body: JSON.stringify({ path, content })
     });
@@ -171,7 +177,7 @@ export class FsClient implements BaseClient {
   }
 
   private async readBinaryFileViaHttp(path: string): Promise<Uint8Array> {
-    const response = await fetchWithErrorHandling(`${this.httpBaseUrl}/fs/read-binary`, {
+    const response = await fetchWithErrorHandling(this.apiPathManager!.fs.readBinary(), {
       method: 'POST',
       body: JSON.stringify({ path })
     });
@@ -206,7 +212,7 @@ export class FsClient implements BaseClient {
   }
 
   private async writeBinaryFileViaHttp(path: string, content: number[]): Promise<void> {
-    const response = await fetchWithErrorHandling(`${this.httpBaseUrl}/fs/write-binary`, {
+    const response = await fetchWithErrorHandling(this.apiPathManager!.fs.writeBinary(), {
       method: 'POST',
       body: JSON.stringify({ path, content })
     });
@@ -238,7 +244,7 @@ export class FsClient implements BaseClient {
   }
 
   private async existsViaHttp(path: string): Promise<boolean> {
-    const response = await fetchWithErrorHandling(`${this.httpBaseUrl}/fs/exists`, {
+    const response = await fetchWithErrorHandling(this.apiPathManager!.fs.exists(), {
       method: 'POST',
       body: JSON.stringify({ path })
     });
@@ -272,7 +278,7 @@ export class FsClient implements BaseClient {
   }
 
   private async statViaHttp(path: string): Promise<FileInfo> {
-    const response = await fetchWithErrorHandling(`${this.httpBaseUrl}/fs/metadata`, {
+    const response = await fetchWithErrorHandling(this.apiPathManager!.fs.metadata(), {
       method: 'POST',
       body: JSON.stringify({ path })
     });
@@ -307,7 +313,7 @@ export class FsClient implements BaseClient {
   }
 
   private async mkdirViaHttp(path: string, recursive: boolean): Promise<void> {
-    const response = await fetchWithErrorHandling(`${this.httpBaseUrl}/fs/create-dir`, {
+    const response = await fetchWithErrorHandling(this.apiPathManager!.fs.createDir(), {
       method: 'POST',
       body: JSON.stringify({ path, recursive })
     });
@@ -338,7 +344,7 @@ export class FsClient implements BaseClient {
   }
 
   private async removeViaHttp(path: string): Promise<void> {
-    const response = await fetchWithErrorHandling(`${this.httpBaseUrl}/fs/remove-file`, {
+    const response = await fetchWithErrorHandling(this.apiPathManager!.fs.removeFile(), {
       method: 'POST',
       body: JSON.stringify({ path })
     });
@@ -370,7 +376,7 @@ export class FsClient implements BaseClient {
   }
 
   private async readDirViaHttp(path: string): Promise<DirEntry[]> {
-    const response = await fetchWithErrorHandling(`${this.httpBaseUrl}/fs/read-dir`, {
+    const response = await fetchWithErrorHandling(this.apiPathManager!.fs.readDir(), {
       method: 'POST',
       body: JSON.stringify({ path })
     });
@@ -403,7 +409,7 @@ export class FsClient implements BaseClient {
   }
 
   private async copyFileViaHttp(source: string, destination: string): Promise<void> {
-    const response = await fetchWithErrorHandling(`${this.httpBaseUrl}/fs/copy-file`, {
+    const response = await fetchWithErrorHandling(this.apiPathManager!.fs.copyFile(), {
       method: 'POST',
       body: JSON.stringify({ from_path: source, to_path: destination })
     });

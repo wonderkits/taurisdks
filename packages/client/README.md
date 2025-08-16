@@ -88,6 +88,31 @@ const entries = await fs.readDir('$HOME');
 await fs.mkdir('$HOME/myapp', { recursive: true });
 ```
 
+### 🎯 统一客户端管理器 (推荐)
+
+```typescript
+import { createWonderKitsClient } from '@magicteam/client';
+
+// 创建统一客户端
+const client = createWonderKitsClient({
+  httpPort: 1420,
+  httpHost: 'localhost', // 可配置主机地址，默认 localhost
+  verbose: true
+});
+
+// 初始化所有需要的服务
+await client.initServices({
+  sql: { connectionString: 'sqlite:app.db' },
+  store: { filename: 'settings.json' },
+  fs: {}
+});
+
+// 使用服务
+const db = client.sql();
+const store = client.store();
+const fs = client.fs();
+```
+
 ### 一键初始化所有客户端
 
 ```typescript
@@ -195,9 +220,29 @@ class FsClient {
 
 ## 🔧 配置选项
 
+### 统一客户端配置
+
+```typescript
+import { WonderKitsClient } from '@magicteam/client';
+
+const client = new WonderKitsClient({
+  // HTTP 服务端口（默认 1420）
+  httpPort: 1420,
+  
+  // HTTP 服务主机地址（默认 'localhost'）
+  httpHost: 'localhost', // 可以设置为 '127.0.0.1' 或其他 IP
+  
+  // 强制指定运行模式（可选）
+  forceMode: 'http', // 'tauri-native' | 'tauri-proxy' | 'http'
+  
+  // 启用详细日志（默认 false）
+  verbose: true
+});
+```
+
 ### HTTP 服务配置
 
-默认情况下，HTTP 模式连接到 `http://localhost:1421`。你可以通过选项自定义：
+默认情况下，HTTP 模式连接到 `http://localhost:1420`。你可以通过选项自定义：
 
 ```typescript
 // 自定义 HTTP 服务地址

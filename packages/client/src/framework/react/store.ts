@@ -9,7 +9,7 @@
  */
 
 import { create } from 'zustand';
-import { WonderKitsClient, type WonderKitsClientConfig, type ClientServices } from '../client';
+import { WonderKitsClient, type WonderKitsClientConfig, type ClientServices } from '../../core/client';
 
 export interface WonderKitsReactStore {
   // 状态

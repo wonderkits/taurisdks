@@ -4,8 +4,8 @@
  * @magicteam/client
  */
 
-import type { BaseClient, BaseClientOptions, ClientMode, ApiResponse } from './types';
-import { environmentDetector, fetchWithErrorHandling, importTauriPlugin, retryWithFallback, logger } from './utils';
+import type { BaseClient, BaseClientOptions, ClientMode, ApiResponse } from '../core/types';
+import { environmentDetector, fetchWithErrorHandling, importTauriPlugin, retryWithFallback, logger, ApiPathManager } from '../core/utils';
 
 // SQL 特定类型定义
 export interface SqlExecuteResult {
@@ -29,6 +29,7 @@ export class Database implements BaseClient {
   readonly isHttpMode: boolean;
   readonly isProxyMode: boolean;
   readonly isTauriNative: boolean;
+  private apiPathManager?: ApiPathManager;
 
   constructor(
     private connectionId: string | any,
@@ -38,6 +39,11 @@ export class Database implements BaseClient {
     this.isHttpMode = !!httpBaseUrl;
     this.isProxyMode = !!sqlProxy;
     this.isTauriNative = !httpBaseUrl && !sqlProxy;
+    
+    // 初始化 API 路径管理器
+    if (this.httpBaseUrl) {
+      this.apiPathManager = new ApiPathManager(this.httpBaseUrl);
+    }
   }
 
   /**
@@ -115,9 +121,10 @@ export class Database implements BaseClient {
    * 通过 HTTP API 加载数据库
    */
   private static async loadViaHttp(connectionString: string, httpBaseUrl: string): Promise<Database> {
-    logger.debug(`${httpBaseUrl}/sql/load`, connectionString);
+    const apiPathManager = new ApiPathManager(httpBaseUrl);
+    logger.debug(apiPathManager.sql.load(), connectionString);
     
-    const response = await fetchWithErrorHandling(`${httpBaseUrl}/sql/load`, {
+    const response = await fetchWithErrorHandling(apiPathManager.sql.load(), {
       method: 'POST',
       body: JSON.stringify({
         connection_string: connectionString
@@ -156,7 +163,7 @@ export class Database implements BaseClient {
   }
 
   private async executeViaHttp(sql: string, params: any[]): Promise<SqlExecuteResult> {
-    const response = await fetchWithErrorHandling(`${this.httpBaseUrl}/sql/execute`, {
+    const response = await fetchWithErrorHandling(this.apiPathManager!.sql.execute(), {
       method: 'POST',
       body: JSON.stringify({
         connection_id: this.connectionId,
@@ -196,7 +203,7 @@ export class Database implements BaseClient {
   }
 
   private async selectViaHttp<T>(sql: string, params: any[]): Promise<T[]> {
-    const response = await fetchWithErrorHandling(`${this.httpBaseUrl}/sql/select`, {
+    const response = await fetchWithErrorHandling(this.apiPathManager!.sql.select(), {
       method: 'POST',
       body: JSON.stringify({
         connection_id: this.connectionId,
@@ -242,7 +249,7 @@ export class Database implements BaseClient {
       return false;
     }
 
-    const response = await fetchWithErrorHandling(`${this.httpBaseUrl}/sql/close`, {
+    const response = await fetchWithErrorHandling(this.apiPathManager!.sql.close(), {
       method: 'POST',
       body: JSON.stringify({
         connection_id: this.connectionId

@@ -9,14 +9,16 @@
  */
 
 import type { BaseClientOptions, ClientMode } from './types';
-import { environmentDetector, logger, retryWithFallback } from './utils';
-import { Database } from './sql';
-import { Store } from './store';
-import { FsClient } from './fs';
+import { environmentDetector, logger, retryWithFallback, ApiPathManager } from './utils';
+import { Database } from '../plugin/sql';
+import { Store } from '../plugin/store';
+import { FsClient } from '../plugin/fs';
 
 export interface WonderKitsClientConfig {
-  /** HTTP 服务端口（开发模式） */
+  /** HTTP 服务端口（默认 1420） */
   httpPort?: number;
+  /** HTTP 服务主机地址（默认 'localhost'） */
+  httpHost?: string;
   /** 强制指定运行模式 */
   forceMode?: ClientMode;
   /** 是否启用详细日志 */
@@ -43,6 +45,7 @@ export interface ClientServices {
 export class WonderKitsClient {
   private config: WonderKitsClientConfig;
   private mode: ClientMode;
+  private apiPathManager?: ApiPathManager;
   private services: {
     sql?: Database;
     store?: Store;
@@ -51,13 +54,19 @@ export class WonderKitsClient {
 
   constructor(config: WonderKitsClientConfig = {}) {
     this.config = {
-      httpPort: 8080,
+      httpPort: 1420,
+      httpHost: 'localhost',
       verbose: false,
       ...config
     };
 
     // 检测运行模式
     this.mode = this.detectMode();
+    
+    // 初始化 API 路径管理器（仅 HTTP 模式需要）
+    if (this.mode === 'http') {
+      this.apiPathManager = new ApiPathManager(this.getHttpBaseUrl());
+    }
     
     if (this.config.verbose) {
       logger.info(`WonderKits Client 初始化, 运行模式: ${this.mode}`);
@@ -127,7 +136,10 @@ export class WonderKitsClient {
           
         case 'http':
           // HTTP 模式：发送简单的健康检查请求
-          const response = await fetch(`${this.getHttpBaseUrl()}/health`, {
+          if (!this.apiPathManager) {
+            this.apiPathManager = new ApiPathManager(this.getHttpBaseUrl());
+          }
+          const response = await fetch(this.apiPathManager.health(), {
             method: 'GET',
             timeout: 3000
           } as any);
@@ -171,7 +183,7 @@ export class WonderKitsClient {
    * 获取 HTTP 基础 URL（HTTP 模式时使用）
    */
   private getHttpBaseUrl(): string {
-    return `http://localhost:${this.config.httpPort}`;
+    return `http://${this.config.httpHost}:${this.config.httpPort}`;
   }
 
   /**

@@ -62,10 +62,26 @@ const createConfig = (input, outputName) => [
 export default [
   // Main index
   ...createConfig('src/index.ts', 'index'),
-  // Individual modules
-  ...createConfig('src/sql.ts', 'sql'),
-  ...createConfig('src/store.ts', 'store'),
-  ...createConfig('src/fs.ts', 'fs'),
-  // React integration
-  ...createConfig('src/react/index.ts', 'react')
+  
+  // Core domain
+  ...createConfig('src/core/index.ts', 'core/index'),
+  
+  // Plugin domain (Tauri plugins)
+  ...createConfig('src/plugin/index.ts', 'plugin/index'),
+  ...createConfig('src/plugin/sql.ts', 'plugin/sql'),
+  ...createConfig('src/plugin/store.ts', 'plugin/store'),
+  ...createConfig('src/plugin/fs.ts', 'plugin/fs'),
+  
+  // Microapp domain
+  ...createConfig('src/microapp/index.ts', 'microapp/index'),
+  
+  // Framework domain
+  ...createConfig('src/framework/index.ts', 'framework/index'),
+  ...createConfig('src/framework/react/index.ts', 'framework/react/index'),
+
+  // Legacy paths for backward compatibility
+  ...createConfig('src/plugin/sql.ts', 'sql'),
+  ...createConfig('src/plugin/store.ts', 'store'),
+  ...createConfig('src/plugin/fs.ts', 'fs'),
+  ...createConfig('src/framework/react/index.ts', 'react')
 ];

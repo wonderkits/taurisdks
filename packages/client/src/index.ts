@@ -10,52 +10,59 @@
  * @license MIT
  */
 
-// 🎯 推荐使用：统一客户端管理器
+// 🎯 核心领域 - 统一客户端管理器
 export {
   WonderKitsClient,
   createWonderKitsClient,
-  initForDevelopment
-} from './client';
+  initForDevelopment,
+  environmentDetector,
+  logger
+} from './core';
 
 export type {
   WonderKitsClientConfig,
   ClientServices
-} from './client';
+} from './core';
 
-// 🔧 独立客户端（向后兼容）
-export { Database, default as SqlClient } from './sql';
-export { Store, default as StoreClient } from './store';
-export { FsClient, default as FileSystemClient } from './fs';
+export type * from './core';
 
-// 📝 类型定义
-export type * from './types';
+// 🔌 插件领域 - Tauri 插件统一客户端
+export {
+  Database,
+  SqlClient,
+  Store,
+  StoreClient,
+  FsClient,
+  FileSystemClient
+} from './plugin';
+
 export type {
   SqlExecuteResult,
   SqlSelectResult,
-  DatabaseOptions
-} from './sql';
-
-export type {
-  StoreLoadOptions
-} from './store';
-
-export type {
+  DatabaseOptions,
+  StoreLoadOptions,
   FsClientInitOptions,
   FileInfo,
   MkdirOptions,
   DirEntry
-} from './fs';
+} from './plugin';
 
-// 🛠️ 工具函数
-export { environmentDetector, logger } from './utils';
-
-// 🌐 Wujie 微前端集成
+// 🌐 微应用领域 - 应用管理和 Wujie 集成
 export {
   WujieUtils,
   WujieAppManager,
-  createWujieApp,
-  type WujieAppInfo
-} from './wujie';
+  createWujieApp
+} from './microapp';
+
+export type {
+  WujieAppInfo,
+  WujieConfig
+} from './microapp';
+
+export type * from './microapp';
+
+// 🛠️ 框架集成领域
+export * from './framework';
 
 // 📊 版本信息
 export const version = '1.0.0';

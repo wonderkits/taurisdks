@@ -6,6 +6,72 @@
 import type { ClientMode, RuntimeEnvironment, EnvironmentDetector } from './types';
 
 /**
+ * API 路径管理器 - 统一管理所有服务的 API 路径
+ */
+export class ApiPathManager {
+  private baseUrl: string;
+  private apiPrefix: string = '/api';
+
+  constructor(baseUrl: string) {
+    this.baseUrl = baseUrl.replace(/\/$/, ''); // 移除末尾的斜杠
+  }
+
+  /**
+   * 获取完整的 API URL
+   */
+  private getApiUrl(path: string): string {
+    const cleanPath = path.startsWith('/') ? path : `/${path}`;
+    return `${this.baseUrl}${this.apiPrefix}${cleanPath}`;
+  }
+
+  // Health 检查
+  health(): string {
+    return this.getApiUrl('/health');
+  }
+
+  // SQL 相关路径
+  sql = {
+    load: (): string => this.getApiUrl('/sql/load'),
+    execute: (): string => this.getApiUrl('/sql/execute'),
+    select: (): string => this.getApiUrl('/sql/select'),
+    close: (): string => this.getApiUrl('/sql/close'),
+    connections: (): string => this.getApiUrl('/sql/connections'),
+  };
+
+  // Store 相关路径
+  store = {
+    load: (): string => this.getApiUrl('/store/load'),
+    set: (): string => this.getApiUrl('/store/set'),
+    get: (): string => this.getApiUrl('/store/get'),
+    delete: (): string => this.getApiUrl('/store/delete'),
+    clear: (): string => this.getApiUrl('/store/clear'),
+    keys: (): string => this.getApiUrl('/store/keys'),
+    values: (): string => this.getApiUrl('/store/values'),
+    entries: (): string => this.getApiUrl('/store/entries'),
+    length: (): string => this.getApiUrl('/store/length'),
+    save: (): string => this.getApiUrl('/store/save'),
+    reload: (): string => this.getApiUrl('/store/reload'),
+    list: (): string => this.getApiUrl('/store/list'),
+  };
+
+  // FS 相关路径
+  fs = {
+    readText: (): string => this.getApiUrl('/fs/read-text'),
+    readBinary: (): string => this.getApiUrl('/fs/read-binary'),
+    writeText: (): string => this.getApiUrl('/fs/write-text'),
+    writeBinary: (): string => this.getApiUrl('/fs/write-binary'),
+    removeFile: (): string => this.getApiUrl('/fs/remove-file'),
+    createDir: (): string => this.getApiUrl('/fs/create-dir'),
+    removeDir: (): string => this.getApiUrl('/fs/remove-dir'),
+    readDir: (): string => this.getApiUrl('/fs/read-dir'),
+    metadata: (): string => this.getApiUrl('/fs/metadata'),
+    exists: (): string => this.getApiUrl('/fs/exists'),
+    copyFile: (): string => this.getApiUrl('/fs/copy-file'),
+    renameFile: (): string => this.getApiUrl('/fs/rename-file'),
+  };
+}
+
+/**
  * 环境检测器实现
  */
 class EnvironmentDetectorImpl implements EnvironmentDetector {

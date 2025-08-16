@@ -4,8 +4,8 @@
  * @magicteam/client
  */
 
-import type { BaseClient, BaseClientOptions, ClientMode, ApiResponse } from './types';
-import { environmentDetector, fetchWithErrorHandling, importTauriPlugin, retryWithFallback, logger } from './utils';
+import type { BaseClient, BaseClientOptions, ClientMode, ApiResponse } from '../core/types';
+import { environmentDetector, fetchWithErrorHandling, importTauriPlugin, retryWithFallback, logger, ApiPathManager } from '../core/utils';
 
 // Store 特定类型定义
 export interface StoreLoadOptions extends BaseClientOptions {
@@ -20,6 +20,7 @@ export class Store implements BaseClient {
   readonly isHttpMode: boolean;
   readonly isProxyMode: boolean;
   readonly isTauriNative: boolean;
+  private apiPathManager?: ApiPathManager;
 
   constructor(
     private storeId: any,
@@ -30,6 +31,11 @@ export class Store implements BaseClient {
     this.isHttpMode = !!httpBaseUrl;
     this.isProxyMode = !!storeProxy;
     this.isTauriNative = !httpBaseUrl && !storeProxy;
+    
+    // 初始化 API 路径管理器
+    if (this.httpBaseUrl) {
+      this.apiPathManager = new ApiPathManager(this.httpBaseUrl);
+    }
   }
 
   /**
@@ -107,9 +113,10 @@ export class Store implements BaseClient {
    * 通过 HTTP API 加载 Store
    */
   private static async loadViaHttp(filename: string, httpBaseUrl: string): Promise<Store> {
-    logger.debug(`${httpBaseUrl}/store/load`, filename);
+    const apiPathManager = new ApiPathManager(httpBaseUrl);
+    logger.debug(apiPathManager.store.load(), filename);
     
-    const response = await fetchWithErrorHandling(`${httpBaseUrl}/store/load`, {
+    const response = await fetchWithErrorHandling(apiPathManager.store.load(), {
       method: 'POST',
       body: JSON.stringify({ filename })
     });
@@ -142,7 +149,7 @@ export class Store implements BaseClient {
   }
 
   private async setViaHttp(key: string, value: any): Promise<void> {
-    const response = await fetchWithErrorHandling(`${this.httpBaseUrl}/store/set`, {
+    const response = await fetchWithErrorHandling(this.apiPathManager!.store.set(), {
       method: 'POST',
       body: JSON.stringify({
         store_id: this.storeId,
@@ -177,7 +184,7 @@ export class Store implements BaseClient {
   }
 
   private async getViaHttp<T>(key: string): Promise<T | null> {
-    const response = await fetchWithErrorHandling(`${this.httpBaseUrl}/store/get`, {
+    const response = await fetchWithErrorHandling(this.apiPathManager!.store.get(), {
       method: 'POST',
       body: JSON.stringify({
         store_id: this.storeId,
@@ -213,7 +220,7 @@ export class Store implements BaseClient {
   }
 
   private async deleteViaHttp(key: string): Promise<boolean> {
-    const response = await fetchWithErrorHandling(`${this.httpBaseUrl}/store/delete`, {
+    const response = await fetchWithErrorHandling(this.apiPathManager!.store.delete(), {
       method: 'POST',
       body: JSON.stringify({
         store_id: this.storeId,
@@ -248,7 +255,7 @@ export class Store implements BaseClient {
   }
 
   private async clearViaHttp(): Promise<void> {
-    const response = await fetchWithErrorHandling(`${this.httpBaseUrl}/store/clear`, {
+    const response = await fetchWithErrorHandling(this.apiPathManager!.store.clear(), {
       method: 'POST',
       body: JSON.stringify({
         store_id: this.storeId
@@ -281,7 +288,7 @@ export class Store implements BaseClient {
   }
 
   private async keysViaHttp(): Promise<string[]> {
-    const response = await fetchWithErrorHandling(`${this.httpBaseUrl}/store/keys`, {
+    const response = await fetchWithErrorHandling(this.apiPathManager!.store.keys(), {
       method: 'POST',
       body: JSON.stringify({
         store_id: this.storeId
@@ -316,7 +323,7 @@ export class Store implements BaseClient {
   }
 
   private async valuesViaHttp(): Promise<any[]> {
-    const response = await fetchWithErrorHandling(`${this.httpBaseUrl}/store/values`, {
+    const response = await fetchWithErrorHandling(this.apiPathManager!.store.values(), {
       method: 'POST',
       body: JSON.stringify({
         store_id: this.storeId
@@ -351,7 +358,7 @@ export class Store implements BaseClient {
   }
 
   private async entriesViaHttp(): Promise<[string, any][]> {
-    const response = await fetchWithErrorHandling(`${this.httpBaseUrl}/store/entries`, {
+    const response = await fetchWithErrorHandling(this.apiPathManager!.store.entries(), {
       method: 'POST',
       body: JSON.stringify({
         store_id: this.storeId
@@ -386,7 +393,7 @@ export class Store implements BaseClient {
   }
 
   private async lengthViaHttp(): Promise<number> {
-    const response = await fetchWithErrorHandling(`${this.httpBaseUrl}/store/length`, {
+    const response = await fetchWithErrorHandling(this.apiPathManager!.store.length(), {
       method: 'POST',
       body: JSON.stringify({
         store_id: this.storeId
@@ -420,7 +427,7 @@ export class Store implements BaseClient {
   }
 
   private async saveViaHttp(): Promise<void> {
-    const response = await fetchWithErrorHandling(`${this.httpBaseUrl}/store/save`, {
+    const response = await fetchWithErrorHandling(this.apiPathManager!.store.save(), {
       method: 'POST',
       body: JSON.stringify({
         store_id: this.storeId
