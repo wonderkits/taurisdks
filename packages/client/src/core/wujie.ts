@@ -105,30 +105,6 @@ export interface WujieAppInfo {
   props?: Record<string, any>;
 }
 
-// Wujie 配置类型
-export interface WujieConfig {
-  name?: string;
-  url: string;
-  props?: Record<string, any>;
-  attrs?: Record<string, any>;
-  replace?: boolean;
-  sync?: boolean;
-  prefix?: {
-    'prefix-url'?: string;
-    'prefix-class'?: string;
-  };
-  alive?: boolean;
-  sandbox?: boolean;
-  fetch?: (url: string, options?: any) => Promise<Response>;
-  plugins?: Array<{ htmlLoader?: Function; jsLoader?: Function; cssLoader?: Function }>;
-  beforeLoad?: (appWindow: Window) => void;
-  beforeMount?: (appWindow: Window) => void;
-  afterMount?: (appWindow: Window) => void;
-  beforeUnmount?: (appWindow: Window) => void;
-  afterUnmount?: (appWindow: Window) => void;
-  activated?: () => void;
-  deactivated?: () => void;
-}
 
 /**
  * Wujie 应用生命周期管理器

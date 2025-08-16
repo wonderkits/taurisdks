@@ -1,6 +1,5 @@
 import * as React from 'react';
 import { RouteObject } from 'react-router-dom';
-import type { WujieConfig } from './wujie';
 
 // 应用生命周期钩子
 export interface AppLifecycleHooks {
@@ -80,7 +79,7 @@ export interface AppConfig {
   routes: AppRouteConfig[];
   hooks?: AppLifecycleHooks;
   entry?: () => Promise<React.ComponentType>;
-  
+
   // 新增：Wujie 微前端配置
   wujie?: WujieConfig;
   // 新增：应用运行模式
@@ -126,5 +125,33 @@ export interface AppContext {
   appId: string;
   registry: IAppRegistry;
   emit: <K extends keyof AppEvents>(event: K, data: AppEvents[K]) => void;
-  subscribe: <K extends keyof AppEvents>(event: K, callback: (data: AppEvents[K]) => void) => () => void;
+  subscribe: <K extends keyof AppEvents>(
+    event: K,
+    callback: (data: AppEvents[K]) => void
+  ) => () => void;
+}
+
+// Wujie 配置类型
+export interface WujieConfig {
+  name?: string;
+  url: string;
+  props?: Record<string, any>;
+  attrs?: Record<string, any>;
+  replace?: boolean;
+  sync?: boolean;
+  prefix?: {
+    'prefix-url'?: string;
+    'prefix-class'?: string;
+  };
+  alive?: boolean;
+  sandbox?: boolean;
+  fetch?: (url: string, options?: any) => Promise<Response>;
+  plugins?: Array<{ htmlLoader?: Function; jsLoader?: Function; cssLoader?: Function }>;
+  beforeLoad?: (appWindow: Window) => void;
+  beforeMount?: (appWindow: Window) => void;
+  afterMount?: (appWindow: Window) => void;
+  beforeUnmount?: (appWindow: Window) => void;
+  afterUnmount?: (appWindow: Window) => void;
+  activated?: () => void;
+  deactivated?: () => void;
 }

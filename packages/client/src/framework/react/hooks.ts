@@ -9,7 +9,7 @@
 
 import { useWonderKitsStore } from './store';
 import type { WonderKitsClientConfig, ClientServices } from '../../core/client';
-import { WujieUtils } from '../../microapp/wujie';
+import { environmentDetector } from '../../core';
 
 /**
  * 主要的 WonderKits Hook - 获取完整状态和操作
@@ -53,10 +53,6 @@ export const initWonderKits = async (config: WonderKitsReactConfig = {}) => {
   } = config;
 
   const store = useWonderKitsStore.getState();
-
-  // Wujie 环境检测和配置
-  const isInWujie = WujieUtils.isInWujie();
-  const appInfo = WujieUtils.getAppInfo();
 
   // 如果已经连接且所有服务都已初始化，跳过
   if (store.isConnected && store.client) {

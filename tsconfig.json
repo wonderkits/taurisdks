@@ -19,7 +19,8 @@
     "baseUrl": ".",
     "paths": {
       "@wonderkits/client": ["./packages/client/src"],
-      "@wonderkits/cli": ["./packages/cli/src"]
+      "@wonderkits/cli": ["./packages/cli/src"],
+      "@wonderkits/app": ["./packages/app/src"]
     }
   },
   "include": [
@@ -33,6 +34,7 @@
   ],
   "references": [
     { "path": "./packages/client" },
-    { "path": "./packages/cli" }
+    { "path": "./packages/cli" },
+    { "path": "./packages/app" }
   ]
 }

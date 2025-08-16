@@ -1,0 +1,105 @@
+{
+  "name": "@wonderkits/app",
+  "version": "1.0.2",
+  "description": "WonderKits micro-frontend application framework with Wujie integration support",
+  "type": "module",
+  "main": "dist/index.js",
+  "module": "dist/index.esm.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.esm.js",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./app": {
+      "import": "./dist/app.esm.js",
+      "require": "./dist/app.js",
+      "types": "./dist/app.d.ts"
+    },
+    "./microApp": {
+      "import": "./dist/microApp.esm.js",
+      "require": "./dist/microApp.js",
+      "types": "./dist/microApp.d.ts"
+    },
+    "./wujie": {
+      "import": "./dist/wujie.esm.js",
+      "require": "./dist/wujie.js",
+      "types": "./dist/wujie.d.ts"
+    }
+  },
+  "files": [
+    "dist/**/*",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc && npx rollup -c",
+    "build:watch": "tsc --watch",
+    "dev": "npx rollup -c --watch",
+    "clean": "rm -rf dist",
+    "prebuild": "npm run clean",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "lint": "eslint src --ext .ts",
+    "format": "prettier --write src/**/*.ts",
+    "prepublishOnly": "npm run build",
+    "typecheck": "tsc --noEmit",
+    "release": "npm run prebuild && npm publish --access public --registry https://registry.npmjs.org/ "
+  },
+  "keywords": [
+    "wonderkits",
+    "micro-frontend",
+    "microapp",
+    "wujie",
+    "application",
+    "framework",
+    "lifecycle",
+    "routing"
+  ],
+  "author": {
+    "name": "WonderKits",
+    "email": "contact@wonderkits.dev"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/wonderkits/taurisdks.git"
+  },
+  "bugs": {
+    "url": "https://github.com/wonderkits/taurisdks/issues"
+  },
+  "homepage": "https://github.com/wonderkits/taurisdks#readme",
+  "peerDependencies": {
+    "react": ">=19.0.0",
+    "react-router-dom": ">=6.0.0"
+  },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    },
+    "react-router-dom": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^25.0.0",
+    "@rollup/plugin-node-resolve": "^15.0.0",
+    "@rollup/plugin-typescript": "^11.0.0",
+    "@types/jest": "^29.5.0",
+    "@types/node": "^20.0.0",
+    "@types/react": "^19.0.0",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "eslint": "^8.0.0",
+    "jest": "^29.5.0",
+    "prettier": "^3.0.0",
+    "react-router-dom": "^6.26.0",
+    "rollup": "^4.0.0",
+    "rollup-plugin-dts": "^6.0.0",
+    "ts-jest": "^29.1.0",
+    "typescript": "^5.0.0"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}

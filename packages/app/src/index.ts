@@ -7,10 +7,3 @@
 export type * from './app';
 export type * from './microApp';
 
-export {
-  WujieUtils,
-  WujieAppManager,
-  createWujieApp,
-  type WujieAppInfo,
-  type WujieConfig
-} from './wujie';

@@ -1,6 +1,6 @@
 {
   "name": "@wonderkits/client",
-  "version": "1.3.3",
+  "version": "1.4.0",
   "description": "Universal Tauri plugin clients with intelligent multi-mode support (Native/Proxy/HTTP)",
   "type": "module",
   "main": "dist/index.js",
@@ -36,16 +36,6 @@
       "import": "./dist/plugin/fs.esm.js",
       "require": "./dist/plugin/fs.js",
       "types": "./dist/plugin/fs.d.ts"
-    },
-    "./microapp": {
-      "import": "./dist/microapp/index.esm.js",
-      "require": "./dist/microapp/index.js",
-      "types": "./dist/microapp/index.d.ts"
-    },
-    "./framework": {
-      "import": "./dist/framework/index.esm.js",
-      "require": "./dist/framework/index.js",
-      "types": "./dist/framework/index.d.ts"
     },
     "./framework/react": {
       "import": "./dist/framework/react/index.esm.js",

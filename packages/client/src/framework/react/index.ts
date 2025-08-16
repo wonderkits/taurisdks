@@ -11,6 +11,8 @@
  * @license MIT
  */
 
+import { WujieUtils } from '../../core';
+
 // 🎯 Core Store & Hooks
 export {
   createWonderKitsStore,
@@ -29,9 +31,3 @@ export {
 } from './hooks';
 
 
-// 📝 Re-export core types for convenience
-export type {
-  WonderKitsClient,
-  WonderKitsClientConfig,
-  ClientServices
-} from '../../core/client';
