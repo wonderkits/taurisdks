@@ -76,7 +76,7 @@ export type AppMode = 'wujie' | 'module' | 'auto';
 export interface AppConfig {
   manifest: AppManifest;
   navigation?: AppNavItem;
-  routes: AppRouteConfig[];
+  routes?: AppRouteConfig[];
   hooks?: AppLifecycleHooks;
   entry?: () => Promise<React.ComponentType>;
 
