@@ -17,9 +17,9 @@ src/
 │   └── app-registry.ts     # 应用注册中心插件
 └── framework/               # 框架集成
     └── react/              # React 集成
-        ├── hooks.ts        # 核心 React Hooks
+        ├── hooks.ts        # 统一 React Hooks（包含 App Registry）
         ├── store.ts        # Zustand 状态管理
-        └── app-registry-hooks.ts # App Registry 专用 Hooks
+        └── index.ts        # React 模块导出
 ```
 
 ## 🔌 插件架构

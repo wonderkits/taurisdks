@@ -60,26 +60,6 @@ const createConfig = (input, outputName) => [
 ];
 
 export default [
-  // Main index
-  ...createConfig('src/index.ts', 'index'),
-  
-  // Core domain
-  ...createConfig('src/core/index.ts', 'core/index'),
-  
-  // Plugin domain (Tauri plugins)
-  ...createConfig('src/plugin/index.ts', 'plugin/index'),
-  ...createConfig('src/plugin/sql.ts', 'plugin/sql'),
-  ...createConfig('src/plugin/store.ts', 'plugin/store'),
-  ...createConfig('src/plugin/fs.ts', 'plugin/fs'),
-  
-  
-  // Framework domain
-  ...createConfig('src/framework/index.ts', 'framework/index'),
-  ...createConfig('src/framework/react/index.ts', 'framework/react/index'),
-
-  // Legacy paths for backward compatibility
-  ...createConfig('src/plugin/sql.ts', 'sql'),
-  ...createConfig('src/plugin/store.ts', 'store'),
-  ...createConfig('src/plugin/fs.ts', 'fs'),
-  ...createConfig('src/framework/react/index.ts', 'react')
+  // 🎯 最终简化：只保留主入口，包含所有功能
+  ...createConfig('src/index.ts', 'index')
 ];

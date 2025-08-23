@@ -27,7 +27,16 @@ export type { WonderKitsClientConfig, ClientServices } from './core';
 export type * from './core';
 
 // 🔌 插件领域 - Tauri 插件统一客户端
-export { Database, SqlClient, Store, StoreClient, FsClient, FileSystemClient } from './plugin';
+export { 
+  Database, 
+  SqlClient, 
+  Store, 
+  StoreClient, 
+  FsClient, 
+  FileSystemClient,
+  AppRegistryClient,
+  AppRegistry
+} from './plugin';
 
 export type {
   SqlExecuteResult,
@@ -38,6 +47,18 @@ export type {
   FileInfo,
   MkdirOptions,
   DirEntry,
+  AppManifest,
+  AppConfig,
+  RegisteredApp,
+  AppHealthStatus,
+  SystemStatus,
+  AppEvent,
+  BulkActionResponse,
+  DevRegisterResponse,
+  AppStats,
+  SearchFilters,
+  ValidationResult,
+  HealthCheckResult
 } from './plugin';
 
 // 🛠️ 框架集成领域

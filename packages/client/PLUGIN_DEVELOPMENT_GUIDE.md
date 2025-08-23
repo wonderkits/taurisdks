@@ -247,7 +247,7 @@ export class WonderKitsClient {
 ### 3. React Hooks 集成
 
 ```typescript
-// framework/react/app-registry-hooks.ts
+// framework/react/hooks.ts - 统一集成到主 hooks 文件
 export function useApps(options: UseAppsOptions = {}) {
   const [apps, setApps] = useState<RegisteredApp[]>([]);
   const [loading, setLoading] = useState(true);

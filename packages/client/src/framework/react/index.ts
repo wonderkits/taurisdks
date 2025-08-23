@@ -31,21 +31,15 @@ export {
   type WonderKitsReactConfig
 } from './hooks';
 
-// 🎯 App Registry Hooks
+// 🎯 App Registry Hooks - 已集成到主 hooks 文件
 export {
   useApp,
   useApps,
   useActiveApps,
   useAppRegistration,
-  useAppHealth,
   useSystemStatus,
   useAppStats,
-  useAppEvents,
-  useAppSearch,
-  useAppExists,
-  useAppStatusWatcher,
-  useAppManager,
   useSystemOverview
-} from './app-registry-hooks';
+} from './hooks';
 
 

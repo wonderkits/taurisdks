@@ -36,23 +36,17 @@ App Registry 客户端提供了与 Tauri 应用注册中心交互的完整解决
 ## 安装和导入
 
 ```typescript
-// 基础客户端
-import { AppRegistryClient, appRegistryClient } from '@wonderkits/client/plugin';
-
-// React Hooks
+// 统一导入 - 所有功能都从主入口导入
 import { 
+  AppRegistryClient,
   useApp, 
   useApps, 
   useAppRegistration,
-  useSystemOverview 
-} from '@wonderkits/client/react';
-
-// 类型定义
-import type { 
-  AppConfig, 
-  RegisteredApp, 
-  AppHealthStatus 
-} from '@wonderkits/client/plugin';
+  useSystemOverview,
+  type AppConfig, 
+  type RegisteredApp, 
+  type AppHealthStatus 
+} from '@wonderkits/client';
 ```
 
 ## 基础使用
@@ -60,9 +54,12 @@ import type {
 ### 1. 客户端初始化
 
 ```typescript
-import { appRegistryClient } from '@wonderkits/client/plugin';
+import { AppRegistryClient } from '@wonderkits/client';
 
-// 客户端会自动初始化，直接可用
+// 创建客户端实例（智能模式选择）
+const appRegistryClient = await AppRegistryClient.create();
+
+// 检查客户端就绪状态
 console.log('客户端就绪状态:', appRegistryClient.isReady());
 ```
 
@@ -80,6 +77,9 @@ await appRegistryClient.activateApp('app-id');
 
 // 停用应用
 await appRegistryClient.deactivateApp('app-id');
+
+// 卸载应用
+await appRegistryClient.uninstallApp('app-id');
 ```
 
 ### 3. 应用注册
@@ -194,7 +194,7 @@ const toolsApps = await appRegistryClient.getAppsByCategory('tools');
 ### 1. 应用列表管理
 
 ```tsx
-import { useApps, useActiveApps } from '@wonderkits/client/react';
+import { useApps, useActiveApps } from '@wonderkits/client';
 
 function AppListComponent() {
   const { 
@@ -232,7 +232,7 @@ function AppListComponent() {
 ### 2. 单个应用管理
 
 ```tsx
-import { useApp } from '@wonderkits/client/react';
+import { useApp } from '@wonderkits/client';
 
 function AppDetailComponent({ appId }: { appId: string }) {
   const { 
@@ -270,7 +270,7 @@ function AppDetailComponent({ appId }: { appId: string }) {
 ### 3. 应用注册表单
 
 ```tsx
-import { useAppRegistration } from '@wonderkits/client/react';
+import { useAppRegistration } from '@wonderkits/client';
 
 function AppRegistrationForm() {
   const { registerApp, registering, error } = useAppRegistration();
@@ -299,7 +299,7 @@ function AppRegistrationForm() {
 ### 4. 系统监控面板
 
 ```tsx
-import { useSystemOverview } from '@wonderkits/client/react';
+import { useSystemOverview } from '@wonderkits/client';
 
 function SystemDashboard() {
   const {
@@ -409,8 +409,9 @@ try {
 ## 最佳实践
 
 ### 1. 连接管理
-- 使用全局单例 `appRegistryClient` 进行大部分操作
+- 使用 `AppRegistryClient.create()` 创建客户端实例，支持智能模式选择
 - 客户端自动处理连接状态，无需手动管理
+- 支持 Tauri 原生、主应用代理、HTTP 服务三种模式
 
 ### 2. 错误处理
 - 始终包装异步调用在 try-catch 中
@@ -446,7 +447,8 @@ try {
 
 1. **客户端未初始化**
    ```typescript
-   if (!appRegistryClient.isReady()) {
+   const client = await AppRegistryClient.create();
+   if (!client.isReady()) {
      console.error('App Registry 客户端未就绪');
    }
    ```
@@ -467,9 +469,12 @@ try {
 
 ```typescript
 // 启用详细日志
+const client = await AppRegistryClient.create();
 console.log('App Registry 客户端状态:', {
-  isReady: appRegistryClient.isReady(),
-  // 其他调试信息
+  isReady: client.isReady(),
+  isHttpMode: client.isHttpMode,
+  isProxyMode: client.isProxyMode,
+  isTauriNative: client.isTauriNative
 });
 
 // 监控网络请求
