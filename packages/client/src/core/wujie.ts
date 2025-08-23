@@ -1,9 +1,9 @@
 /**
  * Wujie 微前端集成
- * 
+ *
  * 提供 Wujie 环境的类型声明和工具函数
  * 简化子应用的 Wujie 集成开发
- * 
+ *
  * @version 1.0.0
  * @license MIT
  */
@@ -13,11 +13,11 @@ declare global {
   interface Window {
     // Wujie 运行标识
     __POWERED_BY_WUJIE__?: boolean;
-    
+
     // Wujie 生命周期钩子
     __WUJIE_MOUNT?: () => void;
     __WUJIE_UNMOUNT?: () => void;
-    
+
     // Wujie 提供的父应用通信接口
     $wujie?: {
       props: Record<string, any>;
@@ -41,7 +41,7 @@ export const WujieUtils = {
    * 检查是否在 Wujie 环境中运行
    */
   isInWujie(): boolean {
-    return !!(window.__POWERED_BY_WUJIE__);
+    return !!window.__POWERED_BY_WUJIE__;
   },
 
   /**
@@ -92,9 +92,9 @@ export const WujieUtils = {
       mode: 'wujie' as const,
       id: window.$wujie?.id,
       url: window.$wujie?.url,
-      props: this.getParentProps()
+      props: this.getParentProps(),
     };
-  }
+  },
 };
 
 // 导出类型
@@ -104,7 +104,6 @@ export interface WujieAppInfo {
   url?: string;
   props?: Record<string, any>;
 }
-
 
 /**
  * Wujie 应用生命周期管理器
@@ -116,7 +115,7 @@ export class WujieAppManager {
 
   constructor(
     renderFunction: () => any,
-    destroyFunction: (root: any) => void = (root) => root?.unmount?.()
+    destroyFunction: (root: any) => void = root => root?.unmount?.()
   ) {
     this.renderFunction = renderFunction;
     this.destroyFunction = destroyFunction;
@@ -144,13 +143,13 @@ export class WujieAppManager {
     window.__WUJIE_MOUNT = () => {
       console.log('子应用 Wujie 挂载');
       this.appRoot = this.renderApp();
-      
+
       // 获取主应用传递的属性
       const props = WujieUtils.getParentProps();
       if (props) {
         console.log('主应用传递的属性:', props);
       }
-      
+
       // 监听主应用路由变化
       WujieUtils.onParentMessage('parent-route-change', (data: any) => {
         console.log('主应用路由变化:', data);

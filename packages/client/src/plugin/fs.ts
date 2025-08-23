@@ -5,7 +5,14 @@
  */
 
 import type { BaseClient, BaseClientOptions, ClientMode, ApiResponse } from '../core/types';
-import { environmentDetector, fetchWithErrorHandling, importTauriPlugin, retryWithFallback, logger, ApiPathManager } from '../core/utils';
+import {
+  environmentDetector,
+  fetchWithErrorHandling,
+  importTauriPlugin,
+  retryWithFallback,
+  logger,
+  ApiPathManager,
+} from '../core/utils';
 
 // FS 特定类型定义
 export interface FsClientInitOptions extends BaseClientOptions {
@@ -52,7 +59,7 @@ export class FsClient implements BaseClient {
     this.isHttpMode = !!httpBaseUrl;
     this.isProxyMode = !!fsProxy;
     this.isTauriNative = !httpBaseUrl && !fsProxy;
-    
+
     // 初始化 API 路径管理器
     if (this.httpBaseUrl) {
       this.apiPathManager = new ApiPathManager(this.httpBaseUrl);
@@ -64,26 +71,26 @@ export class FsClient implements BaseClient {
    */
   static async init(options: FsClientInitOptions = {}): Promise<FsClient> {
     const { httpBaseUrl } = options;
-    
+
     if (httpBaseUrl) {
       // 显式指定 HTTP 模式
       logger.info('显式使用 FS HTTP 模式');
       return new FsClient(httpBaseUrl);
     }
-    
+
     // 智能检测 FS 可用模式
     const fsMode = FsClient.detectFsMode();
-    
+
     switch (fsMode) {
       case 'tauri-native':
         logger.info('使用 Tauri 原生 FS 插件');
         return new FsClient();
-        
+
       case 'tauri-proxy':
         logger.info('使用主应用 FS 代理');
         const fsProxy = window.$wujie?.props?.tauriFs;
         return new FsClient(null, fsProxy);
-        
+
       case 'http':
       default:
         logger.info('使用 HTTP FS 服务');
@@ -114,7 +121,7 @@ export class FsClient implements BaseClient {
   private async readTextFileViaHttp(path: string): Promise<string> {
     const response = await fetchWithErrorHandling(this.apiPathManager!.fs.readText(), {
       method: 'POST',
-      body: JSON.stringify({ path })
+      body: JSON.stringify({ path }),
     });
 
     const result: ApiResponse<{ content: string }> = await response.json();
@@ -147,7 +154,7 @@ export class FsClient implements BaseClient {
   private async writeTextFileViaHttp(path: string, content: string): Promise<void> {
     const response = await fetchWithErrorHandling(this.apiPathManager!.fs.writeText(), {
       method: 'POST',
-      body: JSON.stringify({ path, content })
+      body: JSON.stringify({ path, content }),
     });
 
     const result: ApiResponse = await response.json();
@@ -179,7 +186,7 @@ export class FsClient implements BaseClient {
   private async readBinaryFileViaHttp(path: string): Promise<Uint8Array> {
     const response = await fetchWithErrorHandling(this.apiPathManager!.fs.readBinary(), {
       method: 'POST',
-      body: JSON.stringify({ path })
+      body: JSON.stringify({ path }),
     });
 
     const result: ApiResponse<{ content: number[] }> = await response.json();
@@ -195,7 +202,7 @@ export class FsClient implements BaseClient {
    */
   async writeBinaryFile(path: string, content: Uint8Array | number[]): Promise<void> {
     const contentArray = Array.from(content);
-    
+
     if (this.isHttpMode) {
       return await this.writeBinaryFileViaHttp(path, contentArray);
     } else if (this.isProxyMode) {
@@ -214,7 +221,7 @@ export class FsClient implements BaseClient {
   private async writeBinaryFileViaHttp(path: string, content: number[]): Promise<void> {
     const response = await fetchWithErrorHandling(this.apiPathManager!.fs.writeBinary(), {
       method: 'POST',
-      body: JSON.stringify({ path, content })
+      body: JSON.stringify({ path, content }),
     });
 
     const result: ApiResponse = await response.json();
@@ -246,7 +253,7 @@ export class FsClient implements BaseClient {
   private async existsViaHttp(path: string): Promise<boolean> {
     const response = await fetchWithErrorHandling(this.apiPathManager!.fs.exists(), {
       method: 'POST',
-      body: JSON.stringify({ path })
+      body: JSON.stringify({ path }),
     });
 
     const result: ApiResponse<{ exists: boolean }> = await response.json();
@@ -280,7 +287,7 @@ export class FsClient implements BaseClient {
   private async statViaHttp(path: string): Promise<FileInfo> {
     const response = await fetchWithErrorHandling(this.apiPathManager!.fs.metadata(), {
       method: 'POST',
-      body: JSON.stringify({ path })
+      body: JSON.stringify({ path }),
     });
 
     const result: ApiResponse<{ metadata: FileInfo }> = await response.json();
@@ -296,7 +303,7 @@ export class FsClient implements BaseClient {
    */
   async mkdir(path: string, options: MkdirOptions = {}): Promise<void> {
     const recursive = options.recursive || false;
-    
+
     if (this.isHttpMode) {
       return await this.mkdirViaHttp(path, recursive);
     } else if (this.isProxyMode) {
@@ -315,7 +322,7 @@ export class FsClient implements BaseClient {
   private async mkdirViaHttp(path: string, recursive: boolean): Promise<void> {
     const response = await fetchWithErrorHandling(this.apiPathManager!.fs.createDir(), {
       method: 'POST',
-      body: JSON.stringify({ path, recursive })
+      body: JSON.stringify({ path, recursive }),
     });
 
     const result: ApiResponse = await response.json();
@@ -346,7 +353,7 @@ export class FsClient implements BaseClient {
   private async removeViaHttp(path: string): Promise<void> {
     const response = await fetchWithErrorHandling(this.apiPathManager!.fs.removeFile(), {
       method: 'POST',
-      body: JSON.stringify({ path })
+      body: JSON.stringify({ path }),
     });
 
     const result: ApiResponse = await response.json();
@@ -378,7 +385,7 @@ export class FsClient implements BaseClient {
   private async readDirViaHttp(path: string): Promise<DirEntry[]> {
     const response = await fetchWithErrorHandling(this.apiPathManager!.fs.readDir(), {
       method: 'POST',
-      body: JSON.stringify({ path })
+      body: JSON.stringify({ path }),
     });
 
     const result: ApiResponse<{ entries: DirEntry[] }> = await response.json();
@@ -411,7 +418,7 @@ export class FsClient implements BaseClient {
   private async copyFileViaHttp(source: string, destination: string): Promise<void> {
     const response = await fetchWithErrorHandling(this.apiPathManager!.fs.copyFile(), {
       method: 'POST',
-      body: JSON.stringify({ from_path: source, to_path: destination })
+      body: JSON.stringify({ from_path: source, to_path: destination }),
     });
 
     const result: ApiResponse = await response.json();
@@ -425,7 +432,7 @@ export class FsClient implements BaseClient {
    */
   static detectFsMode(): ClientMode {
     const baseMode = environmentDetector.detectMode();
-    
+
     // 对于 tauri-proxy 模式，需要进一步检测代理是否可用
     if (baseMode === 'tauri-proxy') {
       if (window.$wujie?.props?.tauriFs) {
@@ -436,10 +443,9 @@ export class FsClient implements BaseClient {
         return 'http';
       }
     }
-    
+
     return baseMode;
   }
-
 }
 
 // 默认导出

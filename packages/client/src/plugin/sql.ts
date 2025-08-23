@@ -5,7 +5,14 @@
  */
 
 import type { BaseClient, BaseClientOptions, ClientMode, ApiResponse } from '../core/types';
-import { environmentDetector, fetchWithErrorHandling, importTauriPlugin, retryWithFallback, logger, ApiPathManager } from '../core/utils';
+import {
+  environmentDetector,
+  fetchWithErrorHandling,
+  importTauriPlugin,
+  retryWithFallback,
+  logger,
+  ApiPathManager,
+} from '../core/utils';
 
 // SQL 特定类型定义
 export interface SqlExecuteResult {
@@ -39,7 +46,7 @@ export class Database implements BaseClient {
     this.isHttpMode = !!httpBaseUrl;
     this.isProxyMode = !!sqlProxy;
     this.isTauriNative = !httpBaseUrl && !sqlProxy;
-    
+
     // 初始化 API 路径管理器
     if (this.httpBaseUrl) {
       this.apiPathManager = new ApiPathManager(this.httpBaseUrl);
@@ -51,25 +58,25 @@ export class Database implements BaseClient {
    */
   static async load(connectionString: string, options: DatabaseOptions = {}): Promise<Database> {
     const { httpBaseUrl } = options;
-    
+
     if (httpBaseUrl) {
       // 显式指定 HTTP 模式
       logger.info('显式使用 HTTP 模式');
       return await Database.loadViaHttp(connectionString, httpBaseUrl);
     }
-    
+
     // 智能检测 SQL 可用模式
     const sqlMode = Database.detectSqlMode();
-    
+
     switch (sqlMode) {
       case 'tauri-native':
         logger.info('使用 Tauri 原生 SQL 插件');
         return await Database.loadViaTauri(connectionString);
-        
+
       case 'tauri-proxy':
         logger.info('使用主应用 SQL 代理');
         return await Database.loadViaProxy(connectionString);
-        
+
       case 'http':
       default:
         logger.info('使用 HTTP SQL 服务');
@@ -88,14 +95,14 @@ export class Database implements BaseClient {
 
     logger.debug('尝试导入 @tauri-apps/plugin-sql...');
     const sqlModule = await importTauriPlugin<any>('@tauri-apps/plugin-sql');
-    
+
     if (!sqlModule.Database) {
       throw new Error('SQL 插件模块导入失败或不完整');
     }
 
     const db = await sqlModule.Database.load(connectionString);
     logger.success('Tauri 原生数据库连接创建成功');
-    
+
     return new Database(db);
   }
 
@@ -110,25 +117,28 @@ export class Database implements BaseClient {
 
     const sqlProxy = window.$wujie.props.tauriSql;
     logger.debug('通过主应用代理加载数据库...');
-    
+
     const connectionId = await sqlProxy.loadConnection(connectionString);
     logger.success('主应用代理数据库连接创建成功，连接ID:', connectionId);
-    
+
     return new Database(connectionId, null, sqlProxy);
   }
 
   /**
    * 通过 HTTP API 加载数据库
    */
-  private static async loadViaHttp(connectionString: string, httpBaseUrl: string): Promise<Database> {
+  private static async loadViaHttp(
+    connectionString: string,
+    httpBaseUrl: string
+  ): Promise<Database> {
     const apiPathManager = new ApiPathManager(httpBaseUrl);
     logger.debug(apiPathManager.sql.load(), connectionString);
-    
+
     const response = await fetchWithErrorHandling(apiPathManager.sql.load(), {
       method: 'POST',
       body: JSON.stringify({
-        connection_string: connectionString
-      })
+        connection_string: connectionString,
+      }),
     });
 
     const result: ApiResponse<{ connection_id: string }> = await response.json();
@@ -158,7 +168,7 @@ export class Database implements BaseClient {
     const result = await this.sqlProxy.execute(this.connectionId, sql, params);
     return {
       rowsAffected: result.rowsAffected,
-      lastInsertId: result.lastInsertId
+      lastInsertId: result.lastInsertId,
     };
   }
 
@@ -168,18 +178,19 @@ export class Database implements BaseClient {
       body: JSON.stringify({
         connection_id: this.connectionId,
         sql,
-        params
-      })
+        params,
+      }),
     });
 
-    const result: ApiResponse<{ rows_affected: number; last_insert_id?: number }> = await response.json();
+    const result: ApiResponse<{ rows_affected: number; last_insert_id?: number }> =
+      await response.json();
     if (!result.success) {
       throw new Error(result.message || 'SQL execution failed');
     }
 
     return {
       rowsAffected: result.data!.rows_affected,
-      lastInsertId: result.data!.last_insert_id || null
+      lastInsertId: result.data!.last_insert_id || null,
     };
   }
 
@@ -208,8 +219,8 @@ export class Database implements BaseClient {
       body: JSON.stringify({
         connection_id: this.connectionId,
         sql,
-        params
-      })
+        params,
+      }),
     });
 
     const result: ApiResponse<{ data: T[] }> = await response.json();
@@ -252,8 +263,8 @@ export class Database implements BaseClient {
     const response = await fetchWithErrorHandling(this.apiPathManager!.sql.close(), {
       method: 'POST',
       body: JSON.stringify({
-        connection_id: this.connectionId
-      })
+        connection_id: this.connectionId,
+      }),
     });
 
     const result: ApiResponse<{ success: boolean }> = await response.json();
@@ -271,7 +282,7 @@ export class Database implements BaseClient {
    */
   static detectSqlMode(): ClientMode {
     const baseMode = environmentDetector.detectMode();
-    
+
     // 对于 tauri-proxy 模式，需要进一步检测代理是否可用
     if (baseMode === 'tauri-proxy') {
       if (window.$wujie?.props?.tauriSql) {
@@ -282,7 +293,7 @@ export class Database implements BaseClient {
         return 'http';
       }
     }
-    
+
     return baseMode;
   }
 
@@ -292,7 +303,7 @@ export class Database implements BaseClient {
   static async getConnections(baseUrl = 'http://localhost:1421'): Promise<string[]> {
     const response = await fetchWithErrorHandling(`${baseUrl}/sql/connections`);
     const result: ApiResponse<{ connections: string[] }> = await response.json();
-    
+
     if (!result.success) {
       throw new Error(result.message || 'Failed to get connections');
     }
@@ -306,7 +317,6 @@ export class Database implements BaseClient {
   static getEnvironment() {
     return environmentDetector.getEnvironment();
   }
-
 }
 
 // 默认导出

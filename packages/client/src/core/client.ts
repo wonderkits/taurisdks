@@ -1,9 +1,9 @@
 /**
  * WonderKits Universal Client - 统一的客户端管理器
- * 
+ *
  * 提供统一的初始化和管理接口，避免每个服务重复 initForDevelopment 逻辑
  * 支持智能环境检测和统一配置管理
- * 
+ *
  * @version 1.0.0
  * @license MIT
  */
@@ -62,17 +62,17 @@ export class WonderKitsClient {
       httpPort: 1420,
       httpHost: 'localhost',
       verbose: false,
-      ...config
+      ...config,
     };
 
     // 检测运行模式
     this.mode = this.detectMode();
-    
+
     // 初始化 API 路径管理器（仅 HTTP 模式需要）
     if (this.mode === 'http') {
       this.apiPathManager = new ApiPathManager(this.getHttpBaseUrl());
     }
-    
+
     if (this.config.verbose) {
       logger.info(`WonderKits Client 初始化, 运行模式: ${this.mode}`);
       this.logEnvironmentInfo();
@@ -108,11 +108,11 @@ export class WonderKitsClient {
         tauri: environmentDetector.isInTauri(),
         wujie: environmentDetector.isInWujie(),
         browser: environmentDetector.isBrowser(),
-        node: environmentDetector.isNode()
+        node: environmentDetector.isNode(),
       },
-      config: this.config
+      config: this.config,
     };
-    
+
     logger.info('WonderKits Client 环境信息:', info);
   }
 
@@ -132,13 +132,15 @@ export class WonderKitsClient {
         case 'tauri-native':
           // Tauri 原生模式：检查 Tauri API 是否可用
           return typeof window !== 'undefined' && !!(window as any).__TAURI__;
-          
+
         case 'tauri-proxy':
           // 代理模式：检查主应用的代理对象是否可用
-          return typeof window !== 'undefined' && 
-                 !!(window as any).__POWERED_BY_WUJIE__ &&
-                 !!(window as any).$wujie?.props;
-          
+          return (
+            typeof window !== 'undefined' &&
+            !!(window as any).__POWERED_BY_WUJIE__ &&
+            !!(window as any).$wujie?.props
+          );
+
         case 'http':
           // HTTP 模式：发送简单的健康检查请求
           if (!this.apiPathManager) {
@@ -146,10 +148,10 @@ export class WonderKitsClient {
           }
           const response = await fetch(this.apiPathManager.health(), {
             method: 'GET',
-            timeout: 3000
+            timeout: 3000,
           } as any);
           return response.ok;
-          
+
         default:
           return false;
       }
@@ -164,21 +166,21 @@ export class WonderKitsClient {
    */
   async getConnectionDiagnostics(): Promise<string> {
     const isConnected = await this.checkConnection();
-    
+
     if (isConnected) {
       return `✅ 连接正常 (模式: ${this.mode})`;
     }
-    
+
     switch (this.mode) {
       case 'tauri-native':
         return `❌ Tauri 原生 API 不可用，请在 Tauri 应用中运行`;
-        
+
       case 'tauri-proxy':
         return `❌ Wujie 代理不可用，请确保在主应用的微前端环境中运行`;
-        
+
       case 'http':
         return `❌ HTTP 服务不可用 (${this.getHttpBaseUrl()})，请启动 WonderKits HTTP 服务`;
-        
+
       default:
         return `❌ 未知运行模式: ${this.mode}`;
     }
@@ -201,36 +203,42 @@ export class WonderKitsClient {
       const diagnostics = await this.getConnectionDiagnostics();
       throw new Error(`服务初始化失败: ${diagnostics}`);
     }
-    
+
     logger.info(`✅ 连接检测通过，开始初始化服务...`);
-    
+
     // 统一处理所有服务初始化
     const initPromises = [];
-    
+
     if (services.sql) {
-      initPromises.push(this.initService('sql', services.sql, (config, options) => 
-        Database.load(config.connectionString, options)
-      ));
+      initPromises.push(
+        this.initService('sql', services.sql, (config, options) =>
+          Database.load(config.connectionString, options)
+        )
+      );
     }
-    
+
     if (services.store) {
-      initPromises.push(this.initService('store', services.store, (config, options) => 
-        Store.load(config.filename, options)
-      ));
+      initPromises.push(
+        this.initService('store', services.store, (config, options) =>
+          Store.load(config.filename, options)
+        )
+      );
     }
-    
+
     if (services.fs) {
-      initPromises.push(this.initService('fs', services.fs, (config, options) => 
-        FsClient.init(options)
-      ));
+      initPromises.push(
+        this.initService('fs', services.fs, (config, options) => FsClient.init(options))
+      );
     }
-    
+
     if (services.appRegistry) {
-      initPromises.push(this.initService('appRegistry', services.appRegistry, (config, options) => 
-        AppRegistryClient.create(options)
-      ));
+      initPromises.push(
+        this.initService('appRegistry', services.appRegistry, (config, options) =>
+          AppRegistryClient.create(options)
+        )
+      );
     }
-    
+
     // 并行初始化所有服务
     await Promise.allSettled(initPromises);
 
@@ -245,29 +253,30 @@ export class WonderKitsClient {
    * 统一的服务初始化方法
    */
   private async initService<T>(
-    serviceName: keyof ClientServices, 
-    config: any, 
+    serviceName: keyof ClientServices,
+    config: any,
     initializer: (config: any, options: any) => Promise<T>
   ): Promise<void> {
     const options = {
       ...config.options,
-      httpBaseUrl: this.mode === 'http' ? this.getHttpBaseUrl() : undefined
+      httpBaseUrl: this.mode === 'http' ? this.getHttpBaseUrl() : undefined,
     };
-    
+
     const serviceDisplayName = serviceName.charAt(0).toUpperCase() + serviceName.slice(1);
-    
+
     try {
       const service = await retryWithFallback(
         () => initializer(config, options),
-        () => initializer(config, {
-          ...options,
-          httpBaseUrl: this.getHttpBaseUrl()
-        }),
+        () =>
+          initializer(config, {
+            ...options,
+            httpBaseUrl: this.getHttpBaseUrl(),
+          }),
         `${serviceDisplayName} 智能初始化失败，尝试 HTTP 模式`
       );
 
       (this.services as any)[serviceName] = service;
-      
+
       if (this.config.verbose) {
         logger.success(`${serviceDisplayName} 服务初始化成功 (${this.mode} 模式)`);
       }
@@ -276,7 +285,6 @@ export class WonderKitsClient {
       throw error;
     }
   }
-
 
   /**
    * 获取 SQL 客户端
@@ -329,8 +337,8 @@ export class WonderKitsClient {
    * 获取所有已初始化的服务
    */
   getInitializedServices(): string[] {
-    return Object.keys(this.services).filter(key => 
-      this.services[key as keyof typeof this.services]
+    return Object.keys(this.services).filter(
+      key => this.services[key as keyof typeof this.services]
     );
   }
 
@@ -340,7 +348,7 @@ export class WonderKitsClient {
   async destroy(): Promise<void> {
     // 清理服务实例
     this.services = {};
-    
+
     if (this.config.verbose) {
       logger.info('WonderKits Client 已销毁');
     }
@@ -364,7 +372,7 @@ export const initForDevelopment = async (
 ): Promise<WonderKitsClient> => {
   const client = createWonderKitsClient({
     verbose: true,
-    ...config
+    ...config,
   });
 
   await client.initServices(services);

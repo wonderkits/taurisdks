@@ -78,24 +78,24 @@ export class ApiPathManager {
     registerApp: (): string => this.getApiUrl('/apps'),
     devRegisterApp: (): string => this.getApiUrl('/apps/dev-register'),
     uninstallApp: (appId: string): string => this.getApiUrl(`/apps/${appId}`),
-    
+
     // 应用状态
     activateApp: (appId: string): string => this.getApiUrl(`/apps/${appId}/activate`),
     deactivateApp: (appId: string): string => this.getApiUrl(`/apps/${appId}/deactivate`),
     getActiveApps: (): string => this.getApiUrl('/apps/active'),
     bulkActionApps: (): string => this.getApiUrl('/apps/bulk-action'),
-    
+
     // 监控和统计
     getAppHealth: (appId: string): string => this.getApiUrl(`/apps/${appId}/health`),
     getSystemStatus: (): string => this.getApiUrl('/system/status'),
     getAppStats: (): string => this.getApiUrl('/apps/stats'),
     getAppEvents: (appId: string): string => this.getApiUrl(`/apps/${appId}/events`),
-    
+
     // 工具和搜索
     searchApps: (): string => this.getApiUrl('/apps/search'),
     validateAppConfig: (): string => this.getApiUrl('/apps/validate'),
     cleanupAppCache: (): string => this.getApiUrl('/apps/cleanup'),
-    
+
     // 健康检查
     healthCheck: (): string => this.getApiUrl('/app-registry/health'),
   };
@@ -114,13 +114,13 @@ class EnvironmentDetectorImpl implements EnvironmentDetector {
       console.log('🔍 检测到直接 Tauri 环境');
       return 'tauri-native';
     }
-    
+
     // 检测 2: Wujie 环境中的主应用代理
     if (this.isInWujie()) {
       console.log('🔍 检测到 Wujie 环境，使用代理或 HTTP 服务');
       return 'tauri-proxy'; // 会在具体client中进一步检测代理可用性
     }
-    
+
     console.log('🔍 独立开发环境，使用 HTTP 服务');
     return 'http';
   }
@@ -194,9 +194,7 @@ export async function fetchWithErrorHandling(
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      throw new Error(
-        errorData.error || `HTTP ${response.status}: ${response.statusText}`
-      );
+      throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`);
     }
 
     return response;
@@ -261,5 +259,5 @@ export const logger = {
   },
   debug: (message: string, ...args: any[]) => {
     console.log(`🔄 ${message}`, ...args);
-  }
+  },
 };

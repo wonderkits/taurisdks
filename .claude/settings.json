@@ -1,0 +1,13 @@
+{
+  "hooks": {
+    "post-tool-use": [
+      {
+        "command": "./.claude/hooks/format.sh",
+        "args": ["${hookType}", "${filePath}", "${toolName}"],
+        "description": "编辑文件后自动格式化代码",
+        "enabled": true,
+        "tools": ["Edit", "MultiEdit", "Write"]
+      }
+    ]
+  }
+}

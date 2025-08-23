@@ -5,7 +5,14 @@
  */
 
 import type { BaseClient, BaseClientOptions, ClientMode, ApiResponse } from '../core/types';
-import { environmentDetector, fetchWithErrorHandling, importTauriPlugin, retryWithFallback, logger, ApiPathManager } from '../core/utils';
+import {
+  environmentDetector,
+  fetchWithErrorHandling,
+  importTauriPlugin,
+  retryWithFallback,
+  logger,
+  ApiPathManager,
+} from '../core/utils';
 
 // Store 特定类型定义
 export interface StoreLoadOptions extends BaseClientOptions {
@@ -31,7 +38,7 @@ export class Store implements BaseClient {
     this.isHttpMode = !!httpBaseUrl;
     this.isProxyMode = !!storeProxy;
     this.isTauriNative = !httpBaseUrl && !storeProxy;
-    
+
     // 初始化 API 路径管理器
     if (this.httpBaseUrl) {
       this.apiPathManager = new ApiPathManager(this.httpBaseUrl);
@@ -43,25 +50,25 @@ export class Store implements BaseClient {
    */
   static async load(filename: string, options: StoreLoadOptions = {}): Promise<Store> {
     const { httpBaseUrl } = options;
-    
+
     if (httpBaseUrl) {
       // 显式指定 HTTP 模式
       logger.info('显式使用 Store HTTP 模式');
       return await Store.loadViaHttp(filename, httpBaseUrl);
     }
-    
+
     // 智能检测 Store 可用模式
     const storeMode = Store.detectStoreMode();
-    
+
     switch (storeMode) {
       case 'tauri-native':
         logger.info('使用 Tauri 原生 Store 插件');
         return await Store.loadViaTauri(filename);
-        
+
       case 'tauri-proxy':
         logger.info('使用主应用 Store 代理');
         return await Store.loadViaProxy(filename);
-        
+
       case 'http':
       default:
         logger.info('使用 HTTP Store 服务');
@@ -80,14 +87,14 @@ export class Store implements BaseClient {
 
     logger.debug('尝试导入 @tauri-apps/plugin-store...');
     const storeModule = await importTauriPlugin<any>('@tauri-apps/plugin-store');
-    
+
     if (!storeModule.Store) {
       throw new Error('Store 插件模块导入失败或不完整');
     }
 
     const store = await storeModule.Store.load(filename);
     logger.success('Tauri 原生 Store 加载成功');
-    
+
     return new Store(store, filename);
   }
 
@@ -102,10 +109,10 @@ export class Store implements BaseClient {
 
     const storeProxy = window.$wujie.props.tauriStore;
     logger.debug('通过主应用代理加载 Store...');
-    
+
     const storeId = await storeProxy.loadStore(filename);
     logger.success('主应用代理 Store 加载成功，Store ID:', storeId);
-    
+
     return new Store(storeId, filename, null, storeProxy);
   }
 
@@ -115,10 +122,10 @@ export class Store implements BaseClient {
   private static async loadViaHttp(filename: string, httpBaseUrl: string): Promise<Store> {
     const apiPathManager = new ApiPathManager(httpBaseUrl);
     logger.debug(apiPathManager.store.load(), filename);
-    
+
     const response = await fetchWithErrorHandling(apiPathManager.store.load(), {
       method: 'POST',
-      body: JSON.stringify({ filename })
+      body: JSON.stringify({ filename }),
     });
 
     const result: ApiResponse<{ store_id: string }> = await response.json();
@@ -154,8 +161,8 @@ export class Store implements BaseClient {
       body: JSON.stringify({
         store_id: this.storeId,
         key,
-        value
-      })
+        value,
+      }),
     });
 
     const result: ApiResponse = await response.json();
@@ -188,8 +195,8 @@ export class Store implements BaseClient {
       method: 'POST',
       body: JSON.stringify({
         store_id: this.storeId,
-        key
-      })
+        key,
+      }),
     });
 
     const result: ApiResponse<{ value: T }> = await response.json();
@@ -224,8 +231,8 @@ export class Store implements BaseClient {
       method: 'POST',
       body: JSON.stringify({
         store_id: this.storeId,
-        key
-      })
+        key,
+      }),
     });
 
     const result: ApiResponse<{ success: boolean }> = await response.json();
@@ -258,8 +265,8 @@ export class Store implements BaseClient {
     const response = await fetchWithErrorHandling(this.apiPathManager!.store.clear(), {
       method: 'POST',
       body: JSON.stringify({
-        store_id: this.storeId
-      })
+        store_id: this.storeId,
+      }),
     });
 
     const result: ApiResponse = await response.json();
@@ -291,8 +298,8 @@ export class Store implements BaseClient {
     const response = await fetchWithErrorHandling(this.apiPathManager!.store.keys(), {
       method: 'POST',
       body: JSON.stringify({
-        store_id: this.storeId
-      })
+        store_id: this.storeId,
+      }),
     });
 
     const result: ApiResponse<{ keys: string[] }> = await response.json();
@@ -326,8 +333,8 @@ export class Store implements BaseClient {
     const response = await fetchWithErrorHandling(this.apiPathManager!.store.values(), {
       method: 'POST',
       body: JSON.stringify({
-        store_id: this.storeId
-      })
+        store_id: this.storeId,
+      }),
     });
 
     const result: ApiResponse<{ values: any[] }> = await response.json();
@@ -361,8 +368,8 @@ export class Store implements BaseClient {
     const response = await fetchWithErrorHandling(this.apiPathManager!.store.entries(), {
       method: 'POST',
       body: JSON.stringify({
-        store_id: this.storeId
-      })
+        store_id: this.storeId,
+      }),
     });
 
     const result: ApiResponse<{ entries: [string, any][] }> = await response.json();
@@ -396,8 +403,8 @@ export class Store implements BaseClient {
     const response = await fetchWithErrorHandling(this.apiPathManager!.store.length(), {
       method: 'POST',
       body: JSON.stringify({
-        store_id: this.storeId
-      })
+        store_id: this.storeId,
+      }),
     });
 
     const result: ApiResponse<{ length: number }> = await response.json();
@@ -430,8 +437,8 @@ export class Store implements BaseClient {
     const response = await fetchWithErrorHandling(this.apiPathManager!.store.save(), {
       method: 'POST',
       body: JSON.stringify({
-        store_id: this.storeId
-      })
+        store_id: this.storeId,
+      }),
     });
 
     const result: ApiResponse = await response.json();
@@ -445,7 +452,7 @@ export class Store implements BaseClient {
    */
   static detectStoreMode(): ClientMode {
     const baseMode = environmentDetector.detectMode();
-    
+
     // 对于 tauri-proxy 模式，需要进一步检测代理是否可用
     if (baseMode === 'tauri-proxy') {
       if (window.$wujie?.props?.tauriStore) {
@@ -456,7 +463,7 @@ export class Store implements BaseClient {
         return 'http';
       }
     }
-    
+
     return baseMode;
   }
 
@@ -466,14 +473,13 @@ export class Store implements BaseClient {
   static async getStores(baseUrl = 'http://localhost:1421'): Promise<string[]> {
     const response = await fetchWithErrorHandling(`${baseUrl}/store/list`);
     const result: ApiResponse<{ stores: string[] }> = await response.json();
-    
+
     if (!result.success) {
       throw new Error(result.message || 'Failed to get stores');
     }
 
     return result.data!.stores;
   }
-
 }
 
 // 默认导出

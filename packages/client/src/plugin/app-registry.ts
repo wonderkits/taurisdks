@@ -1,13 +1,20 @@
 /**
  * App Registry Plugin - 应用注册中心插件
- * 
+ *
  * 提供应用注册、管理和监控的统一客户端实现
  * 参考 SQL/Store/FS 插件的多模式统一接口设计
  * 支持 Tauri 原生、主应用代理、HTTP 服务三种模式
  */
 
 import type { BaseClient, BaseClientOptions, ClientMode, ApiResponse } from '../core/types';
-import { environmentDetector, fetchWithErrorHandling, importTauriPlugin, retryWithFallback, logger, ApiPathManager } from '../core/utils';
+import {
+  environmentDetector,
+  fetchWithErrorHandling,
+  importTauriPlugin,
+  retryWithFallback,
+  logger,
+  ApiPathManager,
+} from '../core/utils';
 
 // ============================================================================
 // 类型定义 (从原文件复制)
@@ -153,7 +160,7 @@ export class AppRegistryClient implements BaseClient {
     this.isProxyMode = !!appRegistryProxy;
     this.isTauriNative = !httpBaseUrl && !appRegistryProxy;
     this.appRegistryProxy = appRegistryProxy;
-    
+
     // 初始化 API 路径管理器
     if (this.httpBaseUrl) {
       this.apiPathManager = new ApiPathManager(this.httpBaseUrl);
@@ -165,25 +172,25 @@ export class AppRegistryClient implements BaseClient {
    */
   static async create(options: AppRegistryOptions = {}): Promise<AppRegistryClient> {
     const { httpBaseUrl } = options;
-    
+
     if (httpBaseUrl) {
       // 显式指定 HTTP 模式
       logger.info('显式使用 App Registry HTTP 模式');
       return AppRegistryClient.createViaHttp(httpBaseUrl);
     }
-    
+
     // 智能检测可用模式
     const mode = AppRegistryClient.detectAppRegistryMode();
-    
+
     switch (mode) {
       case 'tauri-native':
         logger.info('使用 Tauri 原生 App Registry');
         return AppRegistryClient.createViaTauri();
-        
+
       case 'tauri-proxy':
         logger.info('使用主应用 App Registry 代理');
         return AppRegistryClient.createViaProxy();
-        
+
       case 'http':
       default:
         logger.info('使用 HTTP App Registry 服务');
@@ -200,7 +207,7 @@ export class AppRegistryClient implements BaseClient {
       logger.debug('🔍 检测到直接 Tauri 环境');
       return 'tauri-native';
     }
-    
+
     // 检测 2: Wujie 环境中的主应用代理
     if (environmentDetector.isInWujie()) {
       logger.debug('🔍 检测到 Wujie 环境，检查代理可用性');
@@ -217,7 +224,7 @@ export class AppRegistryClient implements BaseClient {
         return 'http';
       }
     }
-    
+
     logger.debug('🔍 独立开发环境，使用 HTTP 服务');
     return 'http';
   }
@@ -247,7 +254,7 @@ export class AppRegistryClient implements BaseClient {
 
     const appRegistryProxy = window.$wujie.props.appRegistry;
     logger.success('主应用代理 App Registry 客户端创建成功');
-    
+
     return new AppRegistryClient(null, appRegistryProxy);
   }
 
@@ -257,12 +264,12 @@ export class AppRegistryClient implements BaseClient {
   private static async createViaHttp(httpBaseUrl: string): Promise<AppRegistryClient> {
     const apiPathManager = new ApiPathManager(httpBaseUrl);
     logger.debug('验证 HTTP App Registry 服务连接...');
-    
+
     // 验证服务可用性
     try {
       const response = await fetchWithErrorHandling(apiPathManager.health());
       const healthData = await response.json();
-      
+
       if (healthData.status === 'ok') {
         logger.success('HTTP App Registry 服务连接验证成功');
       } else {
@@ -311,7 +318,7 @@ export class AppRegistryClient implements BaseClient {
     limit?: number;
     offset?: number;
   }): Promise<RegisteredApp[]> {
-    const tauriCore = await importTauriPlugin('@tauri-apps/api/core') as any;
+    const tauriCore = (await importTauriPlugin('@tauri-apps/api/core')) as any;
     return tauriCore.invoke('get_apps', {
       status: options?.status,
       category: options?.category,
@@ -345,13 +352,15 @@ export class AppRegistryClient implements BaseClient {
     if (options?.category) params.append('category', options.category);
     if (options?.limit) params.append('limit', options.limit.toString());
     if (options?.offset) params.append('offset', options.offset.toString());
-    
+
     const query = params.toString();
-    const url = query ? `${this.apiPathManager!.appRegistry.getApps()}?${query}` : this.apiPathManager!.appRegistry.getApps();
-    
+    const url = query
+      ? `${this.apiPathManager!.appRegistry.getApps()}?${query}`
+      : this.apiPathManager!.appRegistry.getApps();
+
     const response = await fetchWithErrorHandling(url);
     const result: ApiResponse<RegisteredApp[]> = await response.json();
-    
+
     if (!result.success) {
       throw new Error(result.message || 'Failed to get apps');
     }
@@ -373,7 +382,7 @@ export class AppRegistryClient implements BaseClient {
   }
 
   private async getAppViaTauri(appId: string): Promise<RegisteredApp | null> {
-    const tauriCore = await importTauriPlugin('@tauri-apps/api/core') as any;
+    const tauriCore = (await importTauriPlugin('@tauri-apps/api/core')) as any;
     return tauriCore.invoke('get_app', {
       app_id: appId,
     });
@@ -387,7 +396,7 @@ export class AppRegistryClient implements BaseClient {
     try {
       const response = await fetchWithErrorHandling(this.apiPathManager!.appRegistry.getApp(appId));
       const result: ApiResponse<RegisteredApp> = await response.json();
-      
+
       if (!result.success) {
         if (response.status === 404) {
           return null;
@@ -418,7 +427,7 @@ export class AppRegistryClient implements BaseClient {
   }
 
   private async healthCheckViaTauri(): Promise<HealthCheckResult> {
-    const tauriCore = await importTauriPlugin('@tauri-apps/api/core') as any;
+    const tauriCore = (await importTauriPlugin('@tauri-apps/api/core')) as any;
     return tauriCore.invoke('app_registry_health_check');
   }
 
@@ -430,17 +439,17 @@ export class AppRegistryClient implements BaseClient {
     try {
       const response = await fetchWithErrorHandling(this.apiPathManager!.health());
       const data = await response.json();
-      
+
       return {
         healthy: response.ok && data.status === 'ok',
         message: data.message || 'Health check completed',
-        timestamp: Date.now()
+        timestamp: Date.now(),
       };
     } catch (error) {
       return {
         healthy: false,
         message: `Health check failed: ${error}`,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       };
     }
   }
@@ -466,7 +475,7 @@ export class AppRegistryClient implements BaseClient {
       }
     } else {
       // Tauri 原生模式
-      const tauriCore = await importTauriPlugin('@tauri-apps/api/core') as any;
+      const tauriCore = (await importTauriPlugin('@tauri-apps/api/core')) as any;
       return tauriCore.invoke(command, args);
     }
   }
@@ -582,21 +591,21 @@ export class AppRegistryClient implements BaseClient {
 
   async waitForAppStatus(appId: string, targetStatus: string, timeoutMs = 30000): Promise<boolean> {
     const startTime = Date.now();
-    
+
     while (Date.now() - startTime < timeoutMs) {
       try {
         const app = await this.getApp(appId);
         if (app?.status === targetStatus) {
           return true;
         }
-        
+
         // 等待一段时间后重试
         await new Promise(resolve => setTimeout(resolve, 1000));
       } catch {
         // 忽略错误，继续重试
       }
     }
-    
+
     return false;
   }
 
