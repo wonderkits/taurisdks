@@ -1,26 +1,24 @@
-# WonderKits Client 开发指南
+# WonderKits Client 开发指南 - v2.0 极简全局管理版本
 
-这是 WonderKits 统一客户端库，提供多模式智能切换的插件架构。
+这是 WonderKits 统一客户端库，提供多模式智能切换的插件架构。**v2.0 版本采用极简全局单例管理，移除了所有 React 依赖**。
 
-## 🏗️ 项目结构
+## 🏗️ 项目结构（v2.0 简化版）
 
 ```
 src/
 ├── core/                    # 核心框架
 │   ├── client.ts           # 统一客户端主类
 │   ├── utils.ts            # 工具函数和环境检测
-│   └── types.ts            # 核心类型定义
+│   ├── types.ts            # 核心类型定义
+│   └── wujie.ts            # Wujie 微前端支持
 ├── plugin/                  # 插件模块
 │   ├── sql.ts              # SQL 数据库插件
 │   ├── store.ts            # Store 存储插件  
 │   ├── fs.ts               # 文件系统插件
 │   └── app-registry.ts     # 应用注册中心插件
-└── framework/               # 框架集成
-    └── react/              # React 集成
-        ├── hooks.ts        # 统一 React Hooks（包含 App Registry）
-        ├── store.ts        # Zustand 状态管理
-        └── index.ts        # React 模块导出
+└── index.ts                 # 主入口 + 全局单例管理
 ```
+
 
 ## 🔌 插件架构
 
@@ -51,13 +49,9 @@ src/
 
 - **[App Registry 文档](./docs/app-registry.md)**: 应用注册中心插件详细说明
 
-- **[迁移指南](./MIGRATION.md)**: 版本升级和迁移说明
 
 ### 示例代码
-- `examples/unified-client.ts`: 统一客户端基础使用示例
-- `examples/unified-client-with-app-registry.ts`: 带 App Registry 的完整示例
-- `examples/react-integration.tsx`: React 集成示例
-- `examples/react-app-registry.tsx`: App Registry React 组件示例
+- `examples/simple-usage.ts`: 极简全局管理使用示例（v2.0 推荐）
 
 ## 🧪 测试架构
 
@@ -82,6 +76,53 @@ npm test __tests__/app-registry/
 # 运行特定测试类型
 npm test unit.test.ts
 npm test integration.test.ts
+```
+
+## 🎯 v2.0 API 使用指南
+
+### 极简全局管理 API
+
+```typescript
+// 主入口导出的新 API
+export { 
+  initWonderKits,           // 全局初始化
+  getWonderKitsClient,      // 获取全局客户端
+  getSql, getStore, getFs, getAppRegistry,  // 便捷服务访问
+  isWonderKitsInitialized,  // 状态检查
+  resetWonderKits          // 重置（测试用）
+} from '@wonderkits/client';
+
+// 基本使用模式
+await initWonderKits({ services: { sql: true, store: true } });
+const sql = getSql();  // 直接使用
+const store = getStore();  // 直接使用
+```
+
+### 配置接口变更
+
+```typescript
+// 新的简化配置接口
+interface WonderKitsSimpleConfig extends WonderKitsClientConfig {
+  services?: {
+    fs?: boolean | object;
+    store?: boolean | { filename?: string };
+    sql?: boolean | { connectionString?: string };
+    appRegistry?: boolean | object;
+  };
+}
+```
+
+### React 集成（可选）
+
+用户可以在自己的 React 项目中创建简单的 hooks：
+
+```typescript
+// 用户项目中的 hooks.ts
+import { getSql, getStore } from '@wonderkits/client';
+
+export const useSql = () => getSql();
+export const useStore = () => getStore();
+// ... 其他 hooks
 ```
 
 ## 🚀 开发工作流
@@ -225,19 +266,37 @@ await this.initService('appRegistry', appRegistryConfig, AppRegistryClient.creat
 
 ## 🎯 重要提示
 
+### v2.0 重大架构变更
+
+#### ✅ 已完成的简化
+1. **移除 React 依赖**: 删除 `framework/react/` 目录和所有相关依赖
+2. **全局单例管理**: 在主入口 `src/index.ts` 中实现全局单例模式
+3. **简化 API**: 提供 `initWonderKits()`, `getSql()` 等便捷函数
+4. **无框架绑定**: 纯 JavaScript，适用于任何环境
+
+#### 🚫 不再支持的功能
+1. **React Hooks**: 不再内置 `useWonderKits()` 等 hooks
+2. **Zustand Store**: 不再使用 React 状态管理
+3. **复杂初始化**: 移除了复杂的 hooks 初始化流程
+
+#### 📦 新的使用模式
+1. **一次初始化**: 应用启动时调用 `initWonderKits()`
+2. **全局访问**: 任何地方直接调用 `getSql()`, `getStore()` 等
+3. **用户自定义**: React 用户可以自己创建简单的 hooks
+
 ### 开发新功能
-1. **架构优先**: 遵循上述架构原则，特别是统一性和简化性原则
-2. **重构参考**: 开发前请阅读 **[重构指南](./REFACTORING_GUIDE.md)** 了解当前架构设计思路
-3. **插件开发**: 新插件开发请参考 **[插件开发指南](./PLUGIN_DEVELOPMENT_GUIDE.md)** 的标准化流程
+1. **极简优先**: 遵循"极简即是极致"的设计原则
+2. **全局单例**: 新功能应集成到全局单例管理
+3. **类型安全**: 确保所有新功能都有完整的 TypeScript 类型定义
 
 ### 维护现有代码
 1. **统一初始化**: 所有服务初始化都应使用 `initService<T>()` 模式
-2. **配置结构化**: 新配置选项应加入 `services` 对象而非平铺
-3. **类型安全**: 确保所有新功能都有完整的 TypeScript 类型定义
+2. **全局管理**: 新服务应通过全局便捷函数提供访问
+3. **向后兼容**: 核心 API 保持兼容，仅移除 React 专用接口
 
-### API设计
-1. **一致性**: 新API应与现有API保持风格一致
-2. **简化性**: 优先提供简单的默认行为，复杂配置作为可选项
-3. **向后兼容**: API变更需要提供迁移路径和废弃警告
+### API设计原则
+1. **极简性**: 最少的概念，最直观的使用
+2. **一致性**: 所有服务使用相同的访问模式
+3. **通用性**: 不绑定任何特定框架
 
-**核心原则**: 在添加任何新功能前，请确保理解并遵循本文档中的架构原则和设计规范。
+**核心原则**: v2.0 专注于提供纯 JavaScript 的统一 Tauri 插件访问，去除了所有非必要的复杂性。

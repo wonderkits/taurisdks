@@ -1,17 +1,26 @@
-# @magicteam/client
+# @wonderkits/client
 
-> Universal Tauri plugin clients with intelligent multi-mode support (Native/Proxy/HTTP)
+> 🎯 **极简全局管理版本** - Universal Tauri plugin clients with intelligent multi-mode support (Native/Proxy/HTTP). Pure JavaScript, no framework dependencies.
 
-[![npm version](https://badge.fury.io/js/@magicteam%2Fclient.svg)](https://badge.fury.io/js/@magicteam%2Fclient)
+[![npm version](https://badge.fury.io/js/@wonderkits%2Fclient.svg)](https://badge.fury.io/js/@wonderkits%2Fclient)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 ## 🚀 概述
 
-`@magicteam/client` 提供与 Tauri 插件完全兼容的客户端库，支持多种运行模式，让你的应用可以在任何环境下无缝工作：
+`@wonderkits/client` 是一个**纯 JavaScript 客户端库**，提供与 Tauri 插件完全兼容的 API，支持多种运行模式。采用极简的全局单例管理，**无任何框架依赖**，可在任何 JavaScript 环境中使用。
+
+### 🎯 三种运行模式
 
 - **🎯 Tauri Native**: 直接使用 Tauri 插件（生产环境）
 - **🔗 Tauri Proxy**: 通过主应用代理（Wujie 微前端架构）
 - **🌐 HTTP Bridge**: 通过 HTTP 服务（开发/独立运行）
+
+### ✨ 版本 2.0 重大更新
+
+- ⚡ **极简架构**: 移除复杂的 React 状态管理，采用全局单例模式
+- 🎯 **零框架依赖**: 纯 JavaScript，适用于任何环境（React、Vue、Angular、原生JS）
+- 🚀 **更小包体积**: 移除所有 React 相关依赖
+- 📦 **更简单的 API**: 一次初始化，全局使用
 
 ## ✨ 特性
 
@@ -21,11 +30,13 @@
 - 🔧 **开发友好**: 内置开发工具和调试功能
 - 🚀 **降级机制**: 智能降级确保任何环境下都能工作
 - 📱 **微前端支持**: 原生支持 Wujie 微前端架构
+- 🎯 **全局单例**: 一次初始化，全局共享，避免重复创建
+- 💪 **无框架绑定**: 适用于任何 JavaScript 环境
 
 ## 📦 安装
 
 ```bash
-npm install @magicteam/client
+npm install @wonderkits/client
 ```
 
 ### 可选的 Peer Dependencies
@@ -37,287 +48,317 @@ npm install @tauri-apps/plugin-sql @tauri-apps/plugin-store @tauri-apps/plugin-f
 
 ## 🎯 快速开始
 
-### SQL 客户端
+### 极简全局管理使用方式
 
 ```typescript
-import { Database } from '@magicteam/client';
+import { 
+  initWonderKits, 
+  getSql, 
+  getStore, 
+  getFs, 
+  getAppRegistry 
+} from '@wonderkits/client';
 
-// 智能模式 - 自动检测环境
-const db = await Database.load('sqlite:database.db');
-
-// 开发模式 - 自动降级
-const db = await Database.loadForDevelopment('sqlite:database.db');
-
-// 执行 SQL
-const result = await db.execute('INSERT INTO users (name) VALUES (?)', ['Alice']);
-const users = await db.select('SELECT * FROM users');
-
-await db.close();
-```
-
-### Store 客户端
-
-```typescript
-import { Store } from '@magicteam/client';
-
-// 加载 Store
-const store = await Store.load('settings.json');
-
-// 设置和获取值
-await store.set('theme', 'dark');
-const theme = await store.get('theme');
-
-// 获取所有键值对
-const entries = await store.entries();
-```
-
-### 文件系统客户端
-
-```typescript
-import { FsClient } from '@magicteam/client';
-
-// 初始化 FS 客户端
-const fs = await FsClient.init();
-
-// 文件操作 - 支持 $HOME 变量
-await fs.writeTextFile('$HOME/config.json', JSON.stringify(config));
-const content = await fs.readTextFile('$HOME/config.json');
-
-// 目录操作
-const entries = await fs.readDir('$HOME');
-await fs.mkdir('$HOME/myapp', { recursive: true });
-```
-
-### 🎯 统一客户端管理器 (推荐)
-
-```typescript
-import { createWonderKitsClient } from '@magicteam/client';
-
-// 创建统一客户端
-const client = createWonderKitsClient({
-  httpPort: 1420,
-  httpHost: 'localhost', // 可配置主机地址，默认 localhost
+// 1. 全局初始化（通常在应用启动时）
+await initWonderKits({
+  services: {
+    sql: { connectionString: 'sqlite:app.db' },
+    store: { filename: 'app.json' },
+    fs: true,
+    appRegistry: true
+  },
   verbose: true
 });
 
-// 初始化所有需要的服务
-await client.initServices({
-  sql: { connectionString: 'sqlite:app.db' },
-  store: { filename: 'settings.json' },
-  fs: {}
+// 2. 在任何地方直接使用服务
+const sql = getSql();
+const store = getStore();
+const fs = getFs();
+const appRegistry = getAppRegistry();
+
+// 执行操作
+await sql.execute('CREATE TABLE users (id INTEGER, name TEXT)');
+await store.set('version', '2.0.0');
+await fs.writeTextFile('config.json', '{"env": "production"}');
+```
+
+### React 项目中使用（可选 Hooks）
+
+如果你在 React 项目中，可以创建简单的 hooks：
+
+```typescript
+// hooks.ts（在你的 React 项目中创建）
+import { 
+  getWonderKitsClient, 
+  getSql, 
+  getStore, 
+  getFs, 
+  getAppRegistry 
+} from '@wonderkits/client';
+
+export const useWonderKits = () => getWonderKitsClient();
+export const useSql = () => getSql();
+export const useStore = () => getStore();
+export const useFs = () => getFs();
+export const useAppRegistry = () => getAppRegistry();
+```
+
+```tsx
+// MyComponent.tsx
+import { useSql, useStore } from './hooks';
+
+function MyComponent() {
+  const sql = useSql();
+  const store = useStore();
+
+  const handleSave = async () => {
+    await sql.execute('INSERT INTO users (name) VALUES (?)', ['John']);
+    await store.set('lastSaved', Date.now());
+  };
+
+  return <button onClick={handleSave}>Save Data</button>;
+}
+```
+
+## 🔧 详细使用指南
+
+### 配置选项
+
+```typescript
+interface WonderKitsSimpleConfig {
+  /** 服务配置 */
+  services?: {
+    fs?: boolean | object;
+    store?: boolean | { filename?: string };
+    sql?: boolean | { connectionString?: string };
+    appRegistry?: boolean | object;
+  };
+  /** HTTP 服务端口（默认 1420） */
+  httpPort?: number;
+  /** HTTP 服务主机地址（默认 'localhost'） */
+  httpHost?: string;
+  /** 强制指定运行模式 */
+  forceMode?: 'tauri-native' | 'tauri-proxy' | 'http';
+  /** 是否启用详细日志 */
+  verbose?: boolean;
+}
+```
+
+### API 参考
+
+#### 初始化和管理
+
+```typescript
+// 全局初始化
+await initWonderKits(config?: WonderKitsSimpleConfig): Promise<WonderKitsClient>
+
+// 获取全局客户端实例
+getWonderKitsClient(): WonderKitsClient
+
+// 检查是否已初始化
+isWonderKitsInitialized(): boolean
+
+// 重置（仅用于测试）
+resetWonderKits(): void
+```
+
+#### 便捷服务访问
+
+```typescript
+// 获取各种服务
+getSql(): Database
+getStore(): Store
+getFs(): FsClient
+getAppRegistry(): AppRegistryClient
+```
+
+### SQL 数据库操作
+
+```typescript
+const sql = getSql();
+
+// 执行SQL
+await sql.execute('CREATE TABLE users (id INTEGER PRIMARY KEY, name TEXT)');
+
+// 查询数据
+const users = await sql.select('SELECT * FROM users WHERE name = ?', ['John']);
+
+// 批量操作
+await sql.execute('BEGIN');
+await sql.execute('INSERT INTO users (name) VALUES (?)', ['Alice']);
+await sql.execute('INSERT INTO users (name) VALUES (?)', ['Bob']);
+await sql.execute('COMMIT');
+```
+
+### Store 键值存储
+
+```typescript
+const store = getStore();
+
+// 设置值
+await store.set('user.name', 'John Doe');
+await store.set('app.version', '2.0.0');
+
+// 获取值
+const userName = await store.get('user.name');
+const version = await store.get('app.version');
+
+// 删除值
+await store.delete('temp.data');
+
+// 清空所有
+await store.clear();
+```
+
+### 文件系统操作
+
+```typescript
+const fs = getFs();
+
+// 写入文件
+await fs.writeTextFile('config.json', JSON.stringify({ theme: 'dark' }));
+
+// 读取文件
+const content = await fs.readTextFile('config.json');
+
+// 创建目录
+await fs.createDir('logs', { recursive: true });
+
+// 列出目录内容
+const entries = await fs.readDir('logs');
+```
+
+### App Registry 应用管理
+
+```typescript
+const appRegistry = getAppRegistry();
+
+// 注册应用
+const appId = await appRegistry.registerApp({
+  manifest: {
+    id: 'my-app',
+    name: 'My Application',
+    version: '1.0.0',
+    description: 'A sample application'
+  },
+  entry: () => import('./app')
 });
 
-// 使用服务
-const db = client.sql();
-const store = client.store();
-const fs = client.fs();
+// 获取已注册的应用
+const apps = await appRegistry.getApps();
+
+// 激活应用
+await appRegistry.activateApp(appId);
 ```
 
-### 一键初始化所有客户端
+## 🔄 从 1.x 版本迁移
 
+### 主要变化
+
+1. **移除 React 依赖**: 不再需要 `react`, `zustand` 等依赖
+2. **简化初始化**: 使用 `initWonderKits()` 替代复杂的 hooks 和 store
+3. **全局访问**: 使用 `getSql()`, `getStore()` 等函数替代 hooks
+
+### 迁移步骤
+
+**Before (v1.x)**:
 ```typescript
-import { devUtils } from '@magicteam/client';
+// 1.x 版本使用方式
+import { useWonderKits, initWonderKits } from '@wonderkits/client/react';
 
-const clients = await devUtils.initAll({
-  sql: { connectionString: 'sqlite:app.db' },
-  store: { filename: 'settings.json' },
-  fs: {}
+function App() {
+  const { client, isConnected, initClient } = useWonderKits();
+
+  useEffect(() => {
+    initClient(services, config);
+  }, []);
+
+  return <div>...</div>;
+}
+```
+
+**After (v2.x)**:
+```typescript
+// 2.x 版本使用方式
+import { initWonderKits, getSql, getStore } from '@wonderkits/client';
+
+// 应用启动时初始化
+await initWonderKits({
+  services: { sql: true, store: true },
+  verbose: true
 });
 
-// 使用客户端
-await clients.sql.execute('CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, name TEXT)');
-await clients.store.set('initialized', true);
-await clients.fs.writeTextFile('$HOME/app.log', 'App started');
-```
-
-## 🔧 环境检测
-
-```typescript
-import { environmentDetector, devUtils } from '@magicteam/client';
-
-// 检测当前运行环境
-console.log('Is in Tauri:', environmentDetector.isInTauri());
-console.log('Is in Wujie:', environmentDetector.isInWujie());
-console.log('Current mode:', environmentDetector.detectMode());
-
-// 检测支持的功能
-const support = devUtils.detectSupport();
-console.log('Support matrix:', support);
-```
-
-## 🏗️ 架构说明
-
-### 智能模式切换
-
-库会自动检测运行环境并选择最优模式：
-
-1. **Tauri Native**: 检测到 `window.__TAURI__` 时使用
-2. **Tauri Proxy**: 检测到 Wujie 环境且有代理时使用
-3. **HTTP Bridge**: 其他情况下使用，连接到本地 HTTP 服务
-
-### 路径解析
-
-FS 客户端支持智能路径解析：
-
-- `$HOME` → 用户主目录
-- `$HOME/path` → 用户主目录下的路径
-- `/absolute/path` → 绝对路径
-- `relative/path` → 相对路径（基于用户主目录）
-
-## 📚 API 参考
-
-### Database
-
-```typescript
-class Database {
-  static async load(connectionString: string, options?: DatabaseOptions): Promise<Database>
-  static async loadForDevelopment(connectionString: string, httpPort?: number): Promise<Database>
+// 在任何地方直接使用
+function saveData() {
+  const sql = getSql();
+  const store = getStore();
   
-  async execute(sql: string, params?: any[]): Promise<SqlExecuteResult>
-  async select<T>(sql: string, params?: any[]): Promise<T[]>
-  async close(): Promise<boolean>
+  // 使用服务...
 }
 ```
 
-### Store
+## 🔧 开发模式
 
 ```typescript
-class Store {
-  static async load(filename: string, options?: StoreLoadOptions): Promise<Store>
-  static async loadForDevelopment(filename: string, httpPort?: number): Promise<Store>
-  
-  async set(key: string, value: any): Promise<void>
-  async get<T>(key: string): Promise<T | null>
-  async delete(key: string): Promise<boolean>
-  async clear(): Promise<void>
-  async keys(): Promise<string[]>
-  async values(): Promise<any[]>
-  async entries(): Promise<[string, any][]>
-  async length(): Promise<number>
-  async save(): Promise<void>
-}
-```
+// 开发环境快速启动
+import { initForDevelopment } from '@wonderkits/client';
 
-### FsClient
-
-```typescript
-class FsClient {
-  static async init(options?: FsClientInitOptions): Promise<FsClient>
-  static async initForDevelopment(httpPort?: number): Promise<FsClient>
-  
-  async readTextFile(path: string): Promise<string>
-  async writeTextFile(path: string, content: string): Promise<void>
-  async readBinaryFile(path: string): Promise<Uint8Array>
-  async writeBinaryFile(path: string, content: Uint8Array | number[]): Promise<void>
-  async exists(path: string): Promise<boolean>
-  async stat(path: string): Promise<FileInfo>
-  async mkdir(path: string, options?: MkdirOptions): Promise<void>
-  async remove(path: string): Promise<void>
-  async readDir(path: string): Promise<DirEntry[]>
-  async copyFile(source: string, destination: string): Promise<void>
-}
-```
-
-## 🔧 配置选项
-
-### 统一客户端配置
-
-```typescript
-import { WonderKitsClient } from '@magicteam/client';
-
-const client = new WonderKitsClient({
-  // HTTP 服务端口（默认 1420）
-  httpPort: 1420,
-  
-  // HTTP 服务主机地址（默认 'localhost'）
-  httpHost: 'localhost', // 可以设置为 '127.0.0.1' 或其他 IP
-  
-  // 强制指定运行模式（可选）
-  forceMode: 'http', // 'tauri-native' | 'tauri-proxy' | 'http'
-  
-  // 启用详细日志（默认 false）
+const client = await initForDevelopment({
+  sql: { connectionString: 'sqlite:dev.db' },
+  store: { filename: 'dev-settings.json' },
+  fs: {},
+  appRegistry: {}
+}, {
+  httpPort: 8080,
   verbose: true
 });
 ```
 
-### HTTP 服务配置
+## 🎯 运行模式详解
 
-默认情况下，HTTP 模式连接到 `http://localhost:1420`。你可以通过选项自定义：
-
+### Tauri Native 模式
 ```typescript
-// 自定义 HTTP 服务地址
-const db = await Database.load('sqlite:app.db', {
-  httpBaseUrl: 'http://localhost:3000'
-});
-
-const store = await Store.load('settings.json', {
-  httpBaseUrl: 'http://localhost:3000'
-});
-
-const fs = await FsClient.init({
-  httpBaseUrl: 'http://localhost:3000'
-});
+// 在 Tauri 应用中自动启用
+// 直接使用 @tauri-apps/plugin-* APIs
 ```
 
-## 🚀 开发和调试
-
-### 启用调试日志
-
+### Wujie 代理模式
 ```typescript
-import { logger } from '@magicteam/client';
-
-// 库会自动输出彩色的调试信息
-// 🔄 调试信息
-// ✅ 成功信息  
-// ❌ 错误信息
-// ⚠️ 警告信息
+// 在微前端子应用中自动检测
+// 通过主应用代理访问 Tauri 插件
 ```
 
-### 环境检测
-
+### HTTP 桥接模式
 ```typescript
-import { environmentDetector } from '@magicteam/client';
-
-const mode = environmentDetector.detectMode();
-console.log(`当前运行模式: ${mode}`);
-
-const env = environmentDetector.getEnvironment();
-console.log(`运行环境: ${env}`);
+// 开发环境或独立 Web 应用
+// 通过 HTTP 服务访问功能
 ```
 
-## 📚 开发者文档
+## 📚 示例项目
 
-### 核心开发指南
-- **[插件开发指南](./PLUGIN_DEVELOPMENT_GUIDE.md)** - 完整的插件开发实战指南
-  - 基于 App Registry 插件的完整开发经验
-  - 多模式统一接口设计模式
-  - 测试策略和开发清单
-  - 常见问题和解决方案
+查看 `examples/` 目录获取更多示例：
 
-- **[项目开发指南](./CLAUDE.md)** - 项目结构和开发规范
-- **[迁移指南](./MIGRATION.md)** - 版本升级说明
-
-### API 文档
-- **[App Registry API](./docs/app-registry.md)** - 应用注册中心详细文档
+- `simple-usage.ts` - 基础使用示例
+- `react-integration.tsx` - React 集成示例
+- `advanced-config.ts` - 高级配置示例
 
 ## 🤝 贡献
 
-欢迎贡献代码！开发新功能前请先阅读：
-1. **[插件开发指南](./PLUGIN_DEVELOPMENT_GUIDE.md)** - 了解标准化开发流程
-2. **[项目开发指南](./CLAUDE.md)** - 了解项目结构和规范
+欢迎贡献代码！请查看 [CONTRIBUTING.md](CONTRIBUTING.md) 了解详细信息。
 
 ## 📄 许可证
 
-MIT License - 查看 [LICENSE](LICENSE) 文件了解详情。
-
-## 🔗 相关链接
-
-- [Tauri](https://tauri.app/)
-- [Wujie 微前端](https://wujie-micro.github.io/doc/)
-- [问题反馈](https://github.com/magicteam/client/issues)
+MIT © [WonderKits](https://github.com/wonderkits)
 
 ---
 
-<p align="center">
-  Made with ❤️ by <a href="https://github.com/magicteam">MagicTeam</a>
-</p>
+## 🎯 核心理念
+
+`@wonderkits/client` v2.0 采用"**极简即是极致**"的设计理念：
+
+- 🎯 **单一职责**: 专注于 Tauri 插件的统一访问
+- 🚀 **极简 API**: 最少的概念，最直观的使用
+- 💪 **无框架绑定**: 适用于任何 JavaScript 环境
+- 📦 **最小依赖**: 只依赖必需的 Tauri 插件
+
+**一次初始化，全局可用，简单而强大。**
