@@ -20,24 +20,11 @@ export interface WonderKitsReactStore {
   logs: string[];
   error: string | null;
   
-  // 服务配置缓存
-  fsConfig: NonNullable<ClientServices['fs']> | null;
-  storeConfig: NonNullable<ClientServices['store']> | null;
-  sqlConfig: NonNullable<ClientServices['sql']> | null;
-  
   // Actions
   addLog: (message: string) => void;
   clearLogs: () => void;
   setError: (error: string | null) => void;
   initClient: (services: ClientServices, config?: WonderKitsClientConfig) => Promise<void>;
-  initWithServices: (options?: {
-    enableFs?: boolean;
-    enableStore?: boolean;
-    enableSql?: boolean;
-    storeFilename?: string;
-    sqlConnectionString?: string;
-    config?: WonderKitsClientConfig;
-  }) => Promise<void>;
   disconnect: () => void;
   
   // 重置状态
@@ -59,10 +46,6 @@ export const createWonderKitsStore = (config?: WonderKitsClientConfig) => {
     clientMode: 'unknown',
     logs: [],
     error: null,
-    
-    fsConfig: null,
-    storeConfig: null,
-    sqlConfig: null,
     
     // 添加日志
     addLog: (message: string) => {
@@ -104,11 +87,7 @@ export const createWonderKitsStore = (config?: WonderKitsClientConfig) => {
         set({
           client,
           isConnected: true,
-          clientMode: mode,
-          // 保存服务配置
-          fsConfig: services.fs || null,
-          storeConfig: services.store || null,
-          sqlConfig: services.sql || null
+          clientMode: mode
         });
         
         addLog(`✅ WonderKits 客户端初始化成功！运行模式: ${mode}`);
@@ -130,58 +109,6 @@ export const createWonderKitsStore = (config?: WonderKitsClientConfig) => {
       }
     },
     
-    // 统一的服务初始化方法
-    initWithServices: async (options = {}) => {
-      const {
-        enableFs = true,
-        enableStore = true,
-        enableSql = true,
-        storeFilename = 'app-settings.json',
-        sqlConnectionString = 'sqlite:app.db',
-        config: clientConfig
-      } = options;
-      
-      const { client, addLog } = get();
-      
-      // 如果客户端已存在且所有请求的服务都已初始化，跳过
-      if (client) {
-        const needInit = (enableFs && !client.isServiceInitialized('fs')) ||
-                        (enableStore && !client.isServiceInitialized('store')) ||
-                        (enableSql && !client.isServiceInitialized('sql'));
-        
-        if (!needInit) {
-          addLog('⚠️ 所有请求的服务都已初始化，跳过重复初始化');
-          return;
-        }
-      }
-      
-      // 构建服务配置
-      const services: ClientServices = {};
-      
-      if (enableFs) {
-        services.fs = {};
-        addLog('📁 启用文件系统服务');
-      }
-      
-      if (enableStore) {
-        services.store = { filename: storeFilename };
-        addLog(`💾 启用存储服务 (${storeFilename})`);
-      }
-      
-      if (enableSql) {
-        services.sql = { connectionString: sqlConnectionString };
-        addLog(`🗃️ 启用数据库服务 (${sqlConnectionString})`);
-      }
-      
-      // 如果没有启用任何服务，直接返回
-      if (Object.keys(services).length === 0) {
-        addLog('⚠️ 未指定要启用的服务');
-        return;
-      }
-      
-      await get().initClient(services, clientConfig);
-    },
-    
     // 断开连接
     disconnect: () => {
       const { addLog, client } = get();
@@ -195,10 +122,7 @@ export const createWonderKitsStore = (config?: WonderKitsClientConfig) => {
         client: null,
         isConnected: false,
         clientMode: 'unknown',
-        error: null,
-        fsConfig: null,
-        storeConfig: null,
-        sqlConfig: null
+        error: null
       });
       
       addLog('✅ 客户端已断开');

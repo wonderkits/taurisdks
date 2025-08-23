@@ -8,8 +8,7 @@
  */
 
 import { useWonderKitsStore } from './store';
-import type { WonderKitsClientConfig, ClientServices } from '../../core/client';
-import { environmentDetector } from '../../core';
+import { WonderKitsClient, type WonderKitsClientConfig, type ClientServices } from '../../core/client';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { 
   AppRegistryClient,
@@ -31,96 +30,67 @@ export const useWonderKits = () => {
 };
 
 /**
- * WonderKits React 配置接口
- * 扩展了 WonderKitsClientConfig，添加了 React 特定的配置选项
+ * 简化的 WonderKits 配置接口
  */
 export interface WonderKitsReactConfig extends WonderKitsClientConfig {
-  /** 是否启用文件系统服务 */
-  enableFs?: boolean;
-  /** 是否启用存储服务 */
-  enableStore?: boolean;
-  /** 是否启用数据库服务 */
-  enableSql?: boolean;
-
-  /** Store 文件名 */
-  storeFilename?: string;
-  /** SQL 连接字符串 */
-  sqlConnectionString?: string;
+  /** 服务配置 */
+  services?: {
+    fs?: boolean;
+    store?: boolean | { filename?: string };
+    sql?: boolean | { connectionString?: string };
+    appRegistry?: boolean;
+  };
 }
 
 /**
- * 函数式初始化 - 不依赖组件生命周期
+ * 简化的初始化函数 - 统一使用 WonderKitsClient
  */
-export const initWonderKits = async (config: WonderKitsReactConfig = {}) => {
-  const {
-    enableFs = true,
-    enableStore = true,
-    enableSql = true,
-    storeFilename = 'app-settings.json',
-    sqlConnectionString = 'sqlite:app.db',
-    httpPort = 1420,
-    httpHost = 'localhost',
-    forceMode,
-    verbose = true,
-  } = config;
-
+export const initWonderKits = async (config: WonderKitsReactConfig = {}): Promise<WonderKitsClient | null> => {
+  const { services = {}, ...clientConfig } = config;
   const store = useWonderKitsStore.getState();
 
-  // 如果已经连接且所有服务都已初始化，跳过
-  if (store.isConnected && store.client) {
-    const needInit =
-      (enableFs && !store.client.isServiceInitialized('fs')) ||
-      (enableStore && !store.client.isServiceInitialized('store')) ||
-      (enableSql && !store.client.isServiceInitialized('sql'));
-
-    if (!needInit) {
-      store.addLog('⚠️ WonderKits 已经初始化，跳过重复初始化');
-      return store.client;
-    }
+  // 如果已初始化且配置未变，直接返回
+  if (store.client && store.isConnected) {
+    store.addLog('⚠️ WonderKits 已经初始化，跳过重复初始化');
+    return store.client;
   }
 
-  // 构建服务配置
-  const services: ClientServices = {};
-
-  if (enableFs) {
-    services.fs = {};
-    if (verbose) store.addLog('📁 启用文件系统服务');
+  // 构建服务配置 - 默认启用所有服务
+  const clientServices: ClientServices = {};
+  
+  if (services.fs !== false) {
+    clientServices.fs = {};
+  }
+  
+  if (services.store !== false) {
+    const storeConfig = typeof services.store === 'object' ? services.store : {};
+    clientServices.store = {
+      filename: storeConfig.filename || 'app-settings.json'
+    };
+  }
+  
+  if (services.sql !== false) {
+    const sqlConfig = typeof services.sql === 'object' ? services.sql : {};
+    clientServices.sql = {
+      connectionString: sqlConfig.connectionString || 'sqlite:app.db'
+    };
+  }
+  
+  if (services.appRegistry !== false) {
+    clientServices.appRegistry = {};
   }
 
-  if (enableStore) {
-    services.store = { filename: storeFilename };
-    if (verbose) store.addLog(`💾 启用存储服务 (${storeFilename})`);
-  }
-
-  if (enableSql) {
-    services.sql = { connectionString: sqlConnectionString };
-    if (verbose) store.addLog(`🗃️ 启用数据库服务 (${sqlConnectionString})`);
-  }
-
-  // 如果没有启用任何服务，直接返回
-  if (Object.keys(services).length === 0) {
+  // 如果没有启用任何服务，返回 null
+  if (Object.keys(clientServices).length === 0) {
     store.addLog('⚠️ 未指定要启用的服务');
     return null;
   }
 
-  const clientConfig: WonderKitsClientConfig = {
-    httpPort,
-    httpHost,
-    forceMode,
-    verbose,
-  };
-
-  if (verbose) {
-    store.addLog('🚀 初始化 WonderKits 客户端...');
-    store.addLog(`🔧 服务: SQL=${enableSql}, Store=${enableStore}, FS=${enableFs}`);
-    store.addLog(`🌐 HTTP端口: ${httpPort}, 主机: ${httpHost}, 模式: ${forceMode || '自动检测'}`);
-  }
-
-  await store.initClient(services, clientConfig);
-
-  if (verbose) {
-    store.addLog('✅ WonderKits 客户端初始化完成');
-  }
+  // 直接使用 store 的初始化方法
+  await store.initClient(clientServices, {
+    verbose: true,
+    ...clientConfig
+  });
 
   return store.client;
 };
@@ -134,8 +104,16 @@ export const useWonderKitsLoading = () => useWonderKitsStore(state => state.isLo
 // App Registry Hooks - 集成到统一 hooks 系统
 // ============================================================================
 
-// 创建默认实例供 hooks 使用
-const appRegistryClient = new AppRegistryClient();
+/**
+ * 获取统一客户端中的 AppRegistryClient
+ */
+const getAppRegistryClient = () => {
+  const client = useWonderKitsStore.getState().client;
+  if (!client?.isServiceInitialized('appRegistry')) {
+    throw new Error('App Registry 服务未初始化，请先调用 initWonderKits');
+  }
+  return client.appRegistry();
+};
 
 // 类型定义
 interface UseAppsOptions {
@@ -190,7 +168,7 @@ export function useApp(appId: string | null): UseAppResult {
     setError(null);
 
     try {
-      const result = await appRegistryClient.getApp(appId);
+      const result = await getAppRegistryClient().getApp(appId);
       setApp(result);
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
@@ -203,7 +181,7 @@ export function useApp(appId: string | null): UseAppResult {
   const activate = useCallback(async () => {
     if (!appId) return;
     try {
-      await appRegistryClient.activateApp(appId);
+      await getAppRegistryClient().activateApp(appId);
       await refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
@@ -213,7 +191,7 @@ export function useApp(appId: string | null): UseAppResult {
   const deactivate = useCallback(async () => {
     if (!appId) return;
     try {
-      await appRegistryClient.deactivateApp(appId);
+      await getAppRegistryClient().deactivateApp(appId);
       await refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
@@ -223,7 +201,7 @@ export function useApp(appId: string | null): UseAppResult {
   const uninstall = useCallback(async () => {
     if (!appId) return;
     try {
-      await appRegistryClient.uninstallApp(appId);
+      await getAppRegistryClient().uninstallApp(appId);
       setApp(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
@@ -250,7 +228,7 @@ export function useApps(options: UseAppsOptions = {}): UseAppsResult {
     setError(null);
 
     try {
-      const result = await appRegistryClient.getApps({ status, category });
+      const result = await getAppRegistryClient().getApps({ status, category });
       setApps(result);
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
@@ -261,19 +239,19 @@ export function useApps(options: UseAppsOptions = {}): UseAppsResult {
   }, [status, category]);
 
   const bulkActivate = useCallback(async (appIds: string[]) => {
-    const result = await appRegistryClient.bulkActivateApps(appIds);
+    const result = await getAppRegistryClient().bulkActivateApps(appIds);
     await refresh();
     return result;
   }, [refresh]);
 
   const bulkDeactivate = useCallback(async (appIds: string[]) => {
-    const result = await appRegistryClient.bulkDeactivateApps(appIds);
+    const result = await getAppRegistryClient().bulkDeactivateApps(appIds);
     await refresh();
     return result;
   }, [refresh]);
 
   const bulkUninstall = useCallback(async (appIds: string[]) => {
-    const result = await appRegistryClient.bulkUninstallApps(appIds);
+    const result = await getAppRegistryClient().bulkUninstallApps(appIds);
     await refresh();
     return result;
   }, [refresh]);
@@ -309,7 +287,7 @@ export function useAppRegistration(): UseAppRegistrationResult {
     setRegistering(true);
     setError(null);
     try {
-      const result = await appRegistryClient.registerApp(config);
+      const result = await getAppRegistryClient().registerApp(config);
       return result;
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : String(err);
@@ -324,7 +302,7 @@ export function useAppRegistration(): UseAppRegistrationResult {
     setRegistering(true);
     setError(null);
     try {
-      const result = await appRegistryClient.devRegisterApp(config, devUrl);
+      const result = await getAppRegistryClient().devRegisterApp(config, devUrl);
       return result;
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : String(err);
@@ -351,7 +329,7 @@ export function useSystemStatus(autoRefresh = false) {
     setLoading(true);
     setError(null);
     try {
-      const result = await appRegistryClient.getSystemStatus();
+      const result = await getAppRegistryClient().getSystemStatus();
       setStatus(result);
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
@@ -389,7 +367,7 @@ export function useAppStats(autoRefresh = false) {
     setLoading(true);
     setError(null);
     try {
-      const result = await appRegistryClient.getAppStats();
+      const result = await getAppRegistryClient().getAppStats();
       setStats(result);
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));

@@ -4,7 +4,7 @@
  * 展示如何通过统一的 client 调用各个服务，包括新的 App Registry
  */
 
-import { createWonderKitsClient, initForDevelopment } from '../src/core/client';
+import { createWonderKitsClient, initForDevelopment } from '../src/index';
 import type { AppConfig } from '../src/plugin/app-registry';
 
 // ============================================================================

@@ -203,28 +203,34 @@ export class WonderKitsClient {
     }
     
     logger.info(`✅ 连接检测通过，开始初始化服务...`);
-    const initPromises: Promise<void>[] = [];
-
-    // 初始化 SQL 服务
+    
+    // 统一处理所有服务初始化
+    const initPromises = [];
+    
     if (services.sql) {
-      initPromises.push(this.initSqlService(services.sql));
+      initPromises.push(this.initService('sql', services.sql, (config, options) => 
+        Database.load(config.connectionString, options)
+      ));
     }
-
-    // 初始化 Store 服务
+    
     if (services.store) {
-      initPromises.push(this.initStoreService(services.store));
+      initPromises.push(this.initService('store', services.store, (config, options) => 
+        Store.load(config.filename, options)
+      ));
     }
-
-    // 初始化 FS 服务
+    
     if (services.fs) {
-      initPromises.push(this.initFsService(services.fs));
+      initPromises.push(this.initService('fs', services.fs, (config, options) => 
+        FsClient.init(options)
+      ));
     }
-
-    // 初始化 App Registry 服务
+    
     if (services.appRegistry) {
-      initPromises.push(this.initAppRegistryService(services.appRegistry));
+      initPromises.push(this.initService('appRegistry', services.appRegistry, (config, options) => 
+        AppRegistryClient.create(options)
+      ));
     }
-
+    
     // 并行初始化所有服务
     await Promise.allSettled(initPromises);
 
@@ -236,120 +242,41 @@ export class WonderKitsClient {
   }
 
   /**
-   * 初始化 SQL 服务
+   * 统一的服务初始化方法
    */
-  private async initSqlService(config: NonNullable<ClientServices['sql']>): Promise<void> {
+  private async initService<T>(
+    serviceName: keyof ClientServices, 
+    config: any, 
+    initializer: (config: any, options: any) => Promise<T>
+  ): Promise<void> {
+    const options = {
+      ...config.options,
+      httpBaseUrl: this.mode === 'http' ? this.getHttpBaseUrl() : undefined
+    };
+    
+    const serviceDisplayName = serviceName.charAt(0).toUpperCase() + serviceName.slice(1);
+    
     try {
-      const options = {
-        ...config.options,
-        httpBaseUrl: this.mode === 'http' ? this.getHttpBaseUrl() : undefined
-      };
-
-      // 使用智能重试逻辑
-      this.services.sql = await retryWithFallback(
-        () => Database.load(config.connectionString, options),
-        () => Database.load(config.connectionString, {
+      const service = await retryWithFallback(
+        () => initializer(config, options),
+        () => initializer(config, {
           ...options,
           httpBaseUrl: this.getHttpBaseUrl()
         }),
-        'SQL 智能初始化失败，尝试 HTTP 模式'
+        `${serviceDisplayName} 智能初始化失败，尝试 HTTP 模式`
       );
 
+      (this.services as any)[serviceName] = service;
+      
       if (this.config.verbose) {
-        logger.success(`SQL 服务初始化成功 (${this.mode} 模式)`);
+        logger.success(`${serviceDisplayName} 服务初始化成功 (${this.mode} 模式)`);
       }
     } catch (error) {
-      logger.error('SQL 服务初始化失败:', error);
+      logger.error(`${serviceDisplayName} 服务初始化失败:`, error);
       throw error;
     }
   }
 
-  /**
-   * 初始化 Store 服务
-   */
-  private async initStoreService(config: NonNullable<ClientServices['store']>): Promise<void> {
-    try {
-      const options = {
-        ...config.options,
-        httpBaseUrl: this.mode === 'http' ? this.getHttpBaseUrl() : undefined
-      };
-
-      // 使用智能重试逻辑
-      this.services.store = await retryWithFallback(
-        () => Store.load(config.filename, options),
-        () => Store.load(config.filename, {
-          ...options,
-          httpBaseUrl: this.getHttpBaseUrl()
-        }),
-        'Store 智能初始化失败，尝试 HTTP 模式'
-      );
-
-      if (this.config.verbose) {
-        logger.success(`Store 服务初始化成功 (${this.mode} 模式)`);
-      }
-    } catch (error) {
-      logger.error('Store 服务初始化失败:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * 初始化 FS 服务
-   */
-  private async initFsService(config: NonNullable<ClientServices['fs']>): Promise<void> {
-    try {
-      const options = {
-        ...config.options,
-        httpBaseUrl: this.mode === 'http' ? this.getHttpBaseUrl() : undefined
-      };
-
-      // 使用智能重试逻辑
-      this.services.fs = await retryWithFallback(
-        () => FsClient.init(options),
-        () => FsClient.init({
-          ...options,
-          httpBaseUrl: this.getHttpBaseUrl()
-        }),
-        'FS 智能初始化失败，尝试 HTTP 模式'
-      );
-
-      if (this.config.verbose) {
-        logger.success(`FS 服务初始化成功 (${this.mode} 模式)`);
-      }
-    } catch (error) {
-      logger.error('FS 服务初始化失败:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * 初始化 App Registry 服务
-   */
-  private async initAppRegistryService(config: NonNullable<ClientServices['appRegistry']>): Promise<void> {
-    try {
-      const options = {
-        ...config.options,
-        httpBaseUrl: this.mode === 'http' ? this.getHttpBaseUrl() : undefined
-      };
-
-      // 使用智能模式选择创建客户端
-      this.services.appRegistry = await retryWithFallback(
-        () => AppRegistryClient.create(options),
-        () => AppRegistryClient.create({
-          ...options,
-          httpBaseUrl: this.getHttpBaseUrl()
-        }),
-        'App Registry 智能初始化失败，尝试 HTTP 模式'
-      );
-
-      if (this.config.verbose) {
-        logger.success(`App Registry 服务初始化成功 (${this.mode} 模式)`);
-      }
-    } catch (error) {
-      logger.error('App Registry 服务初始化失败:', error);
-      throw error;
-    }
-  }
 
   /**
    * 获取 SQL 客户端

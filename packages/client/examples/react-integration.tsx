@@ -16,50 +16,49 @@ import {
   useWonderKitsConnected,
   useWonderKitsLoading,
   useWonderKitsMode,
+  useWonderKitsServices,
   useWonderKitsLogs,
-  
-  // 服务专用 Hooks
   useWonderKitsSql,
   useWonderKitsStoreClient,
   useWonderKitsFs,
-  useWonderKitsServices,
   
-  // Provider（可选）
-  WonderKitsProvider,
+  // 初始化函数
+  initWonderKits,
   
   // 类型
-  type WonderKitsClientConfig
-} from '../src/react/index';
+  type WonderKitsReactConfig,
+  WonderKitsProvider
+} from '../src/framework/react/index';
 
 /**
  * 1️⃣ 基础使用示例 - 自动初始化组件
  */
 const AutoInitializer: React.FC = () => {
-  const { initWithServices, addLog, isConnected } = useWonderKits();
+  const { isConnected, isLoading, error } = useWonderKits();
 
   useEffect(() => {
     if (isConnected) return;
 
     const initialize = async () => {
       try {
-        addLog('🚀 开始初始化 WonderKits 服务...');
-        
-        await initWithServices({
-          enableFs: true,
-          enableStore: true, 
-          enableSql: true,
-          storeFilename: 'app.json',
-          sqlConnectionString: 'sqlite:app.db'
+        await initWonderKits({
+          services: {
+            fs: true,
+            store: { filename: 'react-demo.json' },
+            sql: { connectionString: 'sqlite:react-demo.db' },
+            appRegistry: true
+          },
+          httpPort: 1420,
+          verbose: true
         });
-        
-        addLog('✅ WonderKits 服务初始化完成！');
-      } catch (error: any) {
-        addLog(`❌ 初始化失败: ${error.message}`);
+        console.log('✅ WonderKits 初始化成功');
+      } catch (err) {
+        console.error('❌ 初始化失败:', err);
       }
     };
 
     initialize();
-  }, [initWithServices, addLog, isConnected]);
+  }, [isConnected]);
 
   return null; // 纯初始化组件
 };
@@ -305,7 +304,7 @@ const App: React.FC = () => {
  * 6️⃣ Provider 使用示例（可选）
  */
 const AppWithProvider: React.FC = () => {
-  const config: WonderKitsClientConfig = {
+  const config: WonderKitsReactConfig = {
     httpPort: 8080,
     verbose: true
   };
@@ -315,9 +314,10 @@ const AppWithProvider: React.FC = () => {
       config={config}
       autoInit={{
         services: {
-          fs: {},
+          fs: true,
           store: { filename: 'provider-demo.json' },
-          sql: { connectionString: 'sqlite:provider-demo.db' }
+          sql: { connectionString: 'sqlite:provider-demo.db' },
+          appRegistry: true
         }
       }}
     >
