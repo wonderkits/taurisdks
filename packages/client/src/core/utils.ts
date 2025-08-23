@@ -69,6 +69,36 @@ export class ApiPathManager {
     copyFile: (): string => this.getApiUrl('/fs/copy-file'),
     renameFile: (): string => this.getApiUrl('/fs/rename-file'),
   };
+
+  // App Registry 相关路径
+  appRegistry = {
+    // 应用管理
+    getApps: (): string => this.getApiUrl('/apps'),
+    getApp: (appId: string): string => this.getApiUrl(`/apps/${appId}`),
+    registerApp: (): string => this.getApiUrl('/apps'),
+    devRegisterApp: (): string => this.getApiUrl('/apps/dev-register'),
+    uninstallApp: (appId: string): string => this.getApiUrl(`/apps/${appId}`),
+    
+    // 应用状态
+    activateApp: (appId: string): string => this.getApiUrl(`/apps/${appId}/activate`),
+    deactivateApp: (appId: string): string => this.getApiUrl(`/apps/${appId}/deactivate`),
+    getActiveApps: (): string => this.getApiUrl('/apps/active'),
+    bulkActionApps: (): string => this.getApiUrl('/apps/bulk-action'),
+    
+    // 监控和统计
+    getAppHealth: (appId: string): string => this.getApiUrl(`/apps/${appId}/health`),
+    getSystemStatus: (): string => this.getApiUrl('/system/status'),
+    getAppStats: (): string => this.getApiUrl('/apps/stats'),
+    getAppEvents: (appId: string): string => this.getApiUrl(`/apps/${appId}/events`),
+    
+    // 工具和搜索
+    searchApps: (): string => this.getApiUrl('/apps/search'),
+    validateAppConfig: (): string => this.getApiUrl('/apps/validate'),
+    cleanupAppCache: (): string => this.getApiUrl('/apps/cleanup'),
+    
+    // 健康检查
+    healthCheck: (): string => this.getApiUrl('/app-registry/health'),
+  };
 }
 
 /**
@@ -120,7 +150,12 @@ class EnvironmentDetectorImpl implements EnvironmentDetector {
    * 检测是否在 Tauri 环境中
    */
   isInTauri(): boolean {
-    return typeof window !== 'undefined' && !!window.__TAURI__;
+    try {
+      return typeof window !== 'undefined' && !!window.__TAURI__;
+    } catch (error) {
+      // 环境检测失败时返回 false
+      return false;
+    }
   }
 
   /**

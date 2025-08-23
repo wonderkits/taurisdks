@@ -285,9 +285,26 @@ const env = environmentDetector.getEnvironment();
 console.log(`运行环境: ${env}`);
 ```
 
+## 📚 开发者文档
+
+### 核心开发指南
+- **[插件开发指南](./PLUGIN_DEVELOPMENT_GUIDE.md)** - 完整的插件开发实战指南
+  - 基于 App Registry 插件的完整开发经验
+  - 多模式统一接口设计模式
+  - 测试策略和开发清单
+  - 常见问题和解决方案
+
+- **[项目开发指南](./CLAUDE.md)** - 项目结构和开发规范
+- **[迁移指南](./MIGRATION.md)** - 版本升级说明
+
+### API 文档
+- **[App Registry API](./docs/app-registry.md)** - 应用注册中心详细文档
+
 ## 🤝 贡献
 
-欢迎贡献代码！请查看 [贡献指南](CONTRIBUTING.md)。
+欢迎贡献代码！开发新功能前请先阅读：
+1. **[插件开发指南](./PLUGIN_DEVELOPMENT_GUIDE.md)** - 了解标准化开发流程
+2. **[项目开发指南](./CLAUDE.md)** - 了解项目结构和规范
 
 ## 📄 许可证
 

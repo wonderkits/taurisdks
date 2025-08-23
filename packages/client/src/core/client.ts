@@ -13,6 +13,7 @@ import { environmentDetector, logger, retryWithFallback, ApiPathManager } from '
 import { Database } from '../plugin/sql';
 import { Store } from '../plugin/store';
 import { FsClient } from '../plugin/fs';
+import { AppRegistryClient } from '../plugin/app-registry';
 
 export interface WonderKitsClientConfig {
   /** HTTP 服务端口（默认 1420） */
@@ -37,6 +38,9 @@ export interface ClientServices {
   fs?: {
     options?: BaseClientOptions;
   };
+  appRegistry?: {
+    options?: BaseClientOptions;
+  };
 }
 
 /**
@@ -50,6 +54,7 @@ export class WonderKitsClient {
     sql?: Database;
     store?: Store;
     fs?: FsClient;
+    appRegistry?: AppRegistryClient;
   } = {};
 
   constructor(config: WonderKitsClientConfig = {}) {
@@ -215,6 +220,11 @@ export class WonderKitsClient {
       initPromises.push(this.initFsService(services.fs));
     }
 
+    // 初始化 App Registry 服务
+    if (services.appRegistry) {
+      initPromises.push(this.initAppRegistryService(services.appRegistry));
+    }
+
     // 并行初始化所有服务
     await Promise.allSettled(initPromises);
 
@@ -313,6 +323,35 @@ export class WonderKitsClient {
   }
 
   /**
+   * 初始化 App Registry 服务
+   */
+  private async initAppRegistryService(config: NonNullable<ClientServices['appRegistry']>): Promise<void> {
+    try {
+      const options = {
+        ...config.options,
+        httpBaseUrl: this.mode === 'http' ? this.getHttpBaseUrl() : undefined
+      };
+
+      // 使用智能模式选择创建客户端
+      this.services.appRegistry = await retryWithFallback(
+        () => AppRegistryClient.create(options),
+        () => AppRegistryClient.create({
+          ...options,
+          httpBaseUrl: this.getHttpBaseUrl()
+        }),
+        'App Registry 智能初始化失败，尝试 HTTP 模式'
+      );
+
+      if (this.config.verbose) {
+        logger.success(`App Registry 服务初始化成功 (${this.mode} 模式)`);
+      }
+    } catch (error) {
+      logger.error('App Registry 服务初始化失败:', error);
+      throw error;
+    }
+  }
+
+  /**
    * 获取 SQL 客户端
    */
   sql(): Database {
@@ -343,9 +382,19 @@ export class WonderKitsClient {
   }
 
   /**
+   * 获取 App Registry 客户端
+   */
+  appRegistry(): AppRegistryClient {
+    if (!this.services.appRegistry) {
+      throw new Error('App Registry 服务未初始化，请先调用 initServices');
+    }
+    return this.services.appRegistry;
+  }
+
+  /**
    * 检查服务是否已初始化
    */
-  isServiceInitialized(service: 'sql' | 'store' | 'fs'): boolean {
+  isServiceInitialized(service: 'sql' | 'store' | 'fs' | 'appRegistry'): boolean {
     return !!this.services[service];
   }
 

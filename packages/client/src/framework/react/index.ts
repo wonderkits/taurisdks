@@ -6,6 +6,7 @@
  * - 简化的 React Hooks
  * - 函数式初始化
  * - TypeScript 支持
+ * - App Registry 管理
  * 
  * @version 1.1.0
  * @license MIT
@@ -29,5 +30,22 @@ export {
   initWonderKits,
   type WonderKitsReactConfig
 } from './hooks';
+
+// 🎯 App Registry Hooks
+export {
+  useApp,
+  useApps,
+  useActiveApps,
+  useAppRegistration,
+  useAppHealth,
+  useSystemStatus,
+  useAppStats,
+  useAppEvents,
+  useAppSearch,
+  useAppExists,
+  useAppStatusWatcher,
+  useAppManager,
+  useSystemOverview
+} from './app-registry-hooks';
 
 
