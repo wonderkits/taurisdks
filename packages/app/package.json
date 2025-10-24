@@ -1,6 +1,6 @@
 {
   "name": "@wonderkits/app",
-  "version": "1.0.3",
+  "version": "1.1.1",
   "description": "WonderKits micro-frontend application framework with Wujie integration support",
   "type": "module",
   "main": "dist/index.js",

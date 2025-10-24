@@ -12,10 +12,11 @@ export interface AppLifecycleHooks {
 
 // 导航项配置
 export interface AppNavItem {
+  appId: string;        // 应用ID（必填）
   name: string;
   href: string;
   matchPath?: string;
-  icon: React.ElementType;
+  icon?: React.ElementType;  // 可选：动态应用可能使用HTTP图标
   iconPath?: React.ElementType;
   order?: number;
   visible?: boolean;
