@@ -20,9 +20,9 @@ export interface FsClientInitOptions extends BaseClientOptions {
 }
 
 export interface FileInfo {
-  is_file: boolean;
-  is_dir: boolean;
-  is_symlink: boolean;
+  isFile: boolean;
+  isDir: boolean;
+  isSymlink: boolean;
   size: number;
   modified?: number;
   accessed?: number;
@@ -37,8 +37,8 @@ export interface MkdirOptions {
 export interface DirEntry {
   name: string;
   path: string;
-  is_file: boolean;
-  is_dir: boolean;
+  isFile: boolean;
+  isDir: boolean;
   size: number;
 }
 
@@ -418,7 +418,7 @@ export class FsClient implements BaseClient {
   private async copyFileViaHttp(source: string, destination: string): Promise<void> {
     const response = await fetchWithErrorHandling(this.apiPathManager!.fs.copyFile(), {
       method: 'POST',
-      body: JSON.stringify({ from_path: source, to_path: destination }),
+      body: JSON.stringify({ fromPath: source, toPath: destination }),
     });
 
     const result: ApiResponse = await response.json();

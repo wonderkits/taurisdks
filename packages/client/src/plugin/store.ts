@@ -128,13 +128,13 @@ export class Store implements BaseClient {
       body: JSON.stringify({ filename }),
     });
 
-    const result: ApiResponse<{ store_id: string }> = await response.json();
+    const result: ApiResponse<{ storeId: string }> = await response.json();
     if (!result.success) {
       throw new Error(result.message || 'Failed to load store');
     }
 
-    logger.success(`Store 加载成功，Store ID: ${result.data!.store_id}`);
-    return new Store(result.data!.store_id, filename, httpBaseUrl);
+    logger.success(`Store 加载成功，Store ID: ${result.data!.storeId}`);
+    return new Store(result.data!.storeId, filename, httpBaseUrl);
   }
 
   /**
@@ -159,7 +159,7 @@ export class Store implements BaseClient {
     const response = await fetchWithErrorHandling(this.apiPathManager!.store.set(), {
       method: 'POST',
       body: JSON.stringify({
-        store_id: this.storeId,
+        storeId: this.storeId,
         key,
         value,
       }),
@@ -194,7 +194,7 @@ export class Store implements BaseClient {
     const response = await fetchWithErrorHandling(this.apiPathManager!.store.get(), {
       method: 'POST',
       body: JSON.stringify({
-        store_id: this.storeId,
+        storeId: this.storeId,
         key,
       }),
     });
@@ -230,7 +230,7 @@ export class Store implements BaseClient {
     const response = await fetchWithErrorHandling(this.apiPathManager!.store.delete(), {
       method: 'POST',
       body: JSON.stringify({
-        store_id: this.storeId,
+        storeId: this.storeId,
         key,
       }),
     });
@@ -265,7 +265,7 @@ export class Store implements BaseClient {
     const response = await fetchWithErrorHandling(this.apiPathManager!.store.clear(), {
       method: 'POST',
       body: JSON.stringify({
-        store_id: this.storeId,
+        storeId: this.storeId,
       }),
     });
 
@@ -298,7 +298,7 @@ export class Store implements BaseClient {
     const response = await fetchWithErrorHandling(this.apiPathManager!.store.keys(), {
       method: 'POST',
       body: JSON.stringify({
-        store_id: this.storeId,
+        storeId: this.storeId,
       }),
     });
 
@@ -333,7 +333,7 @@ export class Store implements BaseClient {
     const response = await fetchWithErrorHandling(this.apiPathManager!.store.values(), {
       method: 'POST',
       body: JSON.stringify({
-        store_id: this.storeId,
+        storeId: this.storeId,
       }),
     });
 
@@ -368,7 +368,7 @@ export class Store implements BaseClient {
     const response = await fetchWithErrorHandling(this.apiPathManager!.store.entries(), {
       method: 'POST',
       body: JSON.stringify({
-        store_id: this.storeId,
+        storeId: this.storeId,
       }),
     });
 
@@ -403,7 +403,7 @@ export class Store implements BaseClient {
     const response = await fetchWithErrorHandling(this.apiPathManager!.store.length(), {
       method: 'POST',
       body: JSON.stringify({
-        store_id: this.storeId,
+        storeId: this.storeId,
       }),
     });
 
@@ -437,7 +437,7 @@ export class Store implements BaseClient {
     const response = await fetchWithErrorHandling(this.apiPathManager!.store.save(), {
       method: 'POST',
       body: JSON.stringify({
-        store_id: this.storeId,
+        storeId: this.storeId,
       }),
     });
 

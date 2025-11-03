@@ -137,17 +137,17 @@ export class Database implements BaseClient {
     const response = await fetchWithErrorHandling(apiPathManager.sql.load(), {
       method: 'POST',
       body: JSON.stringify({
-        connection_string: connectionString,
+        connectionString: connectionString,
       }),
     });
 
-    const result: ApiResponse<{ connection_id: string }> = await response.json();
+    const result: ApiResponse<{ connectionId: string }> = await response.json();
     if (!result.success) {
       throw new Error(result.message || 'Failed to load database');
     }
 
-    logger.success(`数据库连接创建成功，连接 ID: ${result.data!.connection_id}`);
-    return new Database(result.data!.connection_id, httpBaseUrl);
+    logger.success(`数据库连接创建成功，连接 ID: ${result.data!.connectionId}`);
+    return new Database(result.data!.connectionId, httpBaseUrl);
   }
 
   /**
@@ -176,21 +176,21 @@ export class Database implements BaseClient {
     const response = await fetchWithErrorHandling(this.apiPathManager!.sql.execute(), {
       method: 'POST',
       body: JSON.stringify({
-        connection_id: this.connectionId,
+        connectionId: this.connectionId,
         sql,
         params,
       }),
     });
 
-    const result: ApiResponse<{ rows_affected: number; last_insert_id?: number }> =
+    const result: ApiResponse<{ rowsAffected: number; lastInsertId?: number }> =
       await response.json();
     if (!result.success) {
       throw new Error(result.message || 'SQL execution failed');
     }
 
     return {
-      rowsAffected: result.data!.rows_affected,
-      lastInsertId: result.data!.last_insert_id || null,
+      rowsAffected: result.data!.rowsAffected,
+      lastInsertId: result.data!.lastInsertId || null,
     };
   }
 
@@ -217,7 +217,7 @@ export class Database implements BaseClient {
     const response = await fetchWithErrorHandling(this.apiPathManager!.sql.select(), {
       method: 'POST',
       body: JSON.stringify({
-        connection_id: this.connectionId,
+        connectionId: this.connectionId,
         sql,
         params,
       }),
@@ -263,7 +263,7 @@ export class Database implements BaseClient {
     const response = await fetchWithErrorHandling(this.apiPathManager!.sql.close(), {
       method: 'POST',
       body: JSON.stringify({
-        connection_id: this.connectionId,
+        connectionId: this.connectionId,
       }),
     });
 
